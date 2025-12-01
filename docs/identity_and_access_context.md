@@ -1,110 +1,69 @@
-## Authentication Flow with Supabase
 
-### **1. User Registration (ex: Agent)**
+## Key Components
+- **Roles**: Dynamic, can be created by admins
+- **Permissions**: Granular actions (e.g., `member.create`)
+- **RolePermission**: Maps which permissions each role has
+- **UserRole**: Assigns roles to users with optional scope
 
-**Flow:**
-```
-Admin creates Agent in your app
-  ↓
-Backend calls Supabase API: createUser()
-  ↓
-Supabase creates user, returns userId
-  ↓
-Backend creates local User record (userId synced from Supabase)
-  ↓
-Backend creates Agent record (userId references local User)
-  ↓
-Backend creates UserRole record (assign "Agent" role to userId)
-  ↓
-Supabase sends welcome email to agent (password setup link)
-```
+## System Roles (Initial)
+- **SuperAdmin** (global, all permissions)
+- **ForumAdmin** (scoped to forum)
+- **AreaAdmin** (scoped to area)
+- **UnitAdmin** (scoped to unit)
+- **Agent** (scoped to agent)
+
+## User creation & role-assignment flow
+- Create the external auth user (Supabase) first so we have an `externalAuthId` to persist locally.
+- Create the local `User` record immediately in the same transaction and link via `externalAuthId`.
+- Create any domain records (if only, e.g., `Agent`, `Member`) and `UserRole` assignments in the same transaction.
+- Rely on Supabase to deliver invite emails; login flow uses standard JWT verification to map to the local user and roles.
+
+### Scenario A — Invite a Forum Admin
+1. Inviter (a current admin) requests invite with role assignment (e.g., `forum_admin` scoped to `forumId`).
+2. Backend (single transaction):
+   - Create user in Supabase (invite flow) → Supabase returns `externalAuthId`/invite link.
+   - Create local `User` record with `externalAuthId` and basic metadata.
+   - Create `UserRole` assignment linking the local `userId` to the `roleId` and `scopeEntityId`.
+3. Supabase sends invitation email to the user.
+4. User follows invite link, sets password, and completes onboarding in Supabase.
+5. When the user logs in, backend verifies JWT, looks up local `User` by `externalAuthId`, and loads `UserRole`s and permissions.
+
+Notes: no special "first login" logic is required since local user and roles exist before the user accepts the invite.
+
+### Scenario B — Register an Agent (example)
+1. Unit Admin creates an Agent.
+2. Backend (single transaction):
+   - Create user in Supabase (invite) → get `externalAuthId`.
+   - Create local `User` record linked to `externalAuthId`.
+   - Create `Agent` domain record linked to the local `userId`.
+   - Create `UserRole` for the `agent` role scoped to the `agentId`.
+3. Supabase sends invite email; Agent sets password and logs in.
+4. Backend verifies JWT, fetches local `User`, `Agent` record, and role assignments.
+
+This same pattern applies for other invite/registration flows (e.g., Members created by Agents): create auth + local user + domain record + scoped `UserRole` in one operation.
+
+
+## Authentication & authorization middleware (WIP)
+
+- Use a request-scoped context store (e.g., AsyncLocalStorage for Express) to hold `reqContext` accessible from deeper layers.
+- Separate concerns into two composable middlewares:
+  1. `authorize(permissionCode, contextExtractor?)` — verifies the user has a specific permission in an optional context (e.g., unitId).
+  2. `applyRoleScope(scopeType, contextExtractor?)` — computes and stores the user's scope (e.g., `{ forumIds: [...] }`) into the request context for downstream filtering.
+
+These can be combined into a single middleware `authorize(permissionCode, scopeType, contextExtractor?)` if desired.
+
+### Request context (pattern)
+- Middleware attaches a `requestContext` object to the AsyncLocalStorage store containing: `user`, `permissions` (optional cache), and `authScope` (computed by `applyRoleScope`).
+- Data fetching code reads `requestContext.authScope` and applies filters automatically.
+- Store shapes like: `{ forumIds: [1,2,3] }` or `{ forumId: 1 }`.
+- Provide a helper `applyScopeToFilters(filters, authScope)` that merges the auth scope into ORM/query filters, returning the final conditions.
+
+### Notes & considerations
+- `applyRoleScope` should be fast and cacheable per request (compute once and reuse).
+- `authorize` should accept a `contextExtractor(req)` function to supply entity IDs (unitId, forumId) for contextual permission checks.
+- Keep permission evaluation logic in a single utility (e.g., `hasPermission(userId, permissionCode, context)`) used by `authorize` and other checks.
 
 ---
-
-### **2. User Login (Agent/Admin)**
-
-**Flow:**
-```
-User enters credentials in frontend
-  ↓
-Frontend calls Supabase Auth API: signInWithPassword()
-  ↓
-Supabase returns JWT token + refresh token
-  ↓
-Frontend stores tokens (localStorage or httpOnly cookie)
-  ↓
-Frontend calls backend API with JWT in Authorization header
-  ↓
-Backend verifies JWT with Supabase (using Supabase SDK)
-  ↓
-Backend extracts userId from JWT
-  ↓
-Backend fetches user roles from local database
-  ↓
-Backend returns user info + roles to frontend
-  ↓
-Frontend stores user context (name, roles, permissions)
-```
-
----
-
-### **3. API Request Authorization**
-
-**Flow:**
-```
-Frontend makes API request (e.g., "Create Member")
-  ↓
-Request includes JWT in Authorization header
-  ↓
-Backend middleware:
-  - Verify JWT with Supabase
-  - Extract userId from JWT
-  - Fetch user roles from local DB
-  - Check if user has permission for this action
-  ↓
-If authorized: Process request
-If not authorized: Return 403 Forbidden
-```
-
-### **4. User Sync (Supabase → Local DB)**
-Using Webhooks:
-Supabase can send webhooks on user events:
-
-user.created
-user.updated
-user.deleted
-
-Webhook Handler:
-```javascript
-// POST /webhooks/supabase/user-events
-async function handleSupabaseUserEvent(event) {
-  switch (event.type) {
-    case 'user.created':
-      await createLocalUser({
-        userId: event.user.id,
-        externalAuthId: event.user.id,
-        email: event.user.email,
-        firstName: event.user.user_metadata.firstName,
-        lastName: event.user.user_metadata.lastName
-      });
-      break;
-      
-    case 'user.updated':
-      await updateLocalUser(event.user.id, {
-        email: event.user.email,
-        firstName: event.user.user_metadata.firstName,
-        lastName: event.user.user_metadata.lastName,
-        lastSyncedAt: new Date()
-      });
-      break;
-      
-    case 'user.deleted':
-      // Handle user deletion (soft delete local record?)
-      await deactivateLocalUser(event.user.id);
-      break;
-  }
-}
-```
 
 ## Domain Model
 
@@ -132,6 +91,38 @@ Role {
   createdAt: timestamp
   createdBy: UUID
   updatedAt: timestamp
+}
+```
+### Entity: User
+```javascript
+User {
+  userId: UUID
+  externalAuthId: string // Supabase user id
+  email: string
+  firstName: string?
+  lastName: string?
+  isActive: boolean
+
+  // Optional metadata from auth provider
+  userMetadata: JSON?
+
+  // Metadata
+  createdAt: timestamp
+  lastSyncedAt: timestamp
+}
+```
+
+Examples:
+```javascript
+{
+  userId: 'user-123',
+  externalAuthId: 'auth|uuid-abc',
+  email: 'alice@example.com',
+  firstName: 'Alice',
+  lastName: 'K',
+  isActive: true,
+  createdAt: '2025-12-01T00:00:00Z',
+  lastSyncedAt: '2025-12-01T00:00:00Z'
 }
 ```
 Examples:
@@ -207,28 +198,8 @@ Examples:
 { permissionCode: "member.read", module: "Membership", action: "read" }
 { permissionCode: "member.update", module: "Membership", action: "update" }
 { permissionCode: "member.approve", module: "Membership", action: "approve" }
-{ permissionCode: "member.suspend", module: "Membership", action: "suspend" }
 
-// Wallet permissions
-{ permissionCode: "wallet.deposit.approve", module: "Wallet", action: "approve" }
-{ permissionCode: "wallet.balance.view", module: "Wallet", action: "read" }
-
-// Death claim permissions
-{ permissionCode: "death_claim.report", module: "Claims", action: "create" }
-{ permissionCode: "death_claim.verify", module: "Claims", action: "approve" }
-{ permissionCode: "death_claim.settle", module: "Claims", action: "settle" }
-
-// Organization permissions
-{ permissionCode: "forum.create", module: "Organization", action: "create" }
-{ permissionCode: "area.create", module: "Organization", action: "create" }
-{ permissionCode: "unit.create", module: "Organization", action: "create" }
-{ permissionCode: "agent.create", module: "Organization", action: "create" }
-
-// Role management permissions
-{ permissionCode: "role.create", module: "Security", action: "create" }
-{ permissionCode: "role.assign", module: "Security", action: "assign" }
 ```
-
 ### Entity: RolePermission (Join table)
 ```javascript
 RolePermission {
@@ -303,7 +274,7 @@ Examples:
 }
 ```
   
-### Permission Checking Logic
+## Permission Checking Logic
 Function: `getUserPermissions(userId, context?)`
 ```javascript
 async function getUserPermissions(userId, context = {}) {
@@ -426,7 +397,70 @@ app.post('/api/members',
 );
 ```
 
-## Commands for Role Management
+## Commands
+
+### InviteUser
+
+- **Triggered by:** Admin with `role.assign` permission
+- **Input:**
+
+```json
+{
+  "email": "string",
+  "firstName": "string?",
+  "lastName": "string?",
+  "roleAssignments": [
+    {
+      "roleId": "uuid",
+      "scopeEntityType": "Forum|Area|Unit|Agent?",
+      "scopeEntityId": "uuid?"
+    }
+  ],
+  "invitedBy": "uuid"
+}
+```
+
+- **Preconditions:**
+  - Inviter has `role.assign` permission scoped appropriately
+  - Email not already registered
+
+- **Outcome:**
+  - Supabase user created (invite link generated)
+  - Local `User` record created with `externalAuthId`
+  - `UserRole` assignments created for specified roles
+  - Event: `UserInvited`
+
+---
+
+### RegisterAgent (remove/move to agents separate documentation once created)
+
+- **Triggered by:** Admin with `agent.create` permission
+- **Input:**
+
+```json
+{
+  "unitId": "uuid",
+  "agentCode": "string",
+  "email": "string",
+  "personalDetails": { /* firstName, lastName, contact, etc. */ },
+  "joinedDate": "date",
+  "createdBy": "uuid"
+}
+```
+
+- **Preconditions:**
+  - Creator has `agent.create` for the unit/area/forum
+  - Unit exists
+  - Agent code is unique within unit
+
+- **Outcome:**
+  - Supabase user created (invite link generated)
+  - Local `User` record created
+  - `Agent` record created and linked to user
+  - `UserRole` assigned for `agent` scoped to the agent entity
+  - Event: `AgentRegistered`
+
+---
 
 ### CreateRole
 
@@ -830,28 +864,8 @@ CREATE INDEX idx_user_roles_scope ON user_roles(scope_entity_type, scope_entity_
 CREATE INDEX idx_user_roles_active ON user_roles(is_active);
 ```
 
-## Key Components
+## (WIP) Use Webhooks as Safety Net
+ // POST /webhooks/supabase/auth
+Skip webhooks for Phase 1, add in Phase 2 
 
-- **Roles**: Dynamic, can be created by admins
-- **Permissions**: Granular actions (e.g., `member.create`)
-- **RolePermission**: Maps which permissions each role has
-- **UserRole**: Assigns roles to users with optional scope
-
----
-
-## System Roles (Initial)
-
-- **SuperAdmin** (global, all permissions)
-- **ForumAdmin** (scoped to forum)
-- **AreaAdmin** (scoped to area)
-- **UnitAdmin** (scoped to unit)
-- **Agent** (scoped to agent)
-
----
-
-## Permission Checking
-
-1. Check user's roles in given context
-2. Aggregate permissions from all applicable roles
-3. Verify permission exists before allowing action
 
