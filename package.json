@@ -7,7 +7,7 @@
   "scripts": {
     "dev": "tsx watch -r tsconfig-paths/register src/index.ts",
     "build": "tsc -p tsconfig.json",
-    "start": "node dist/index.js",
+    "start": "node register-module-alias.cjs",
     "lint": "eslint \"src/**/*.ts\"",
     "lint:fix": "eslint \"src/**/*.ts\" --fix",
     "format": "prettier --write \"src/**/*.{ts,js,json,md}\"",
@@ -19,7 +19,15 @@
   "dependencies": {
     "@prisma/adapter-pg": "^7.1.0",
     "@prisma/client": "^7.1.0",
-    "express": "^4.22.1"
+    "express": "^4.22.1",
+    "module-alias": "^2.2.2"
+  },
+  "_moduleAliases": {
+    "@": "dist",
+    "@config": "dist/config",
+    "@modules": "dist/modules",
+    "@shared": "dist/shared",
+    "@constants": "dist/constants"
   },
   "devDependencies": {
     "@types/express": "^4.17.25",
