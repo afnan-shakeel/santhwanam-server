@@ -14,13 +14,16 @@
     "prisma:generate": "prisma generate",
     "prisma:dbpush": "prisma db push",
     "prisma:migrate": "prisma migrate dev",
-    "prisma:studio": "prisma studio"
+    "prisma:studio": "npx prisma studio --config ./prisma.config.ts",
+    "seed": "tsx ./prisma/seed.ts"
   },
   "dependencies": {
     "@prisma/adapter-pg": "^7.1.0",
     "@prisma/client": "^7.1.0",
+    "@supabase/supabase-js": "^2.86.2",
     "express": "^4.22.1",
-    "module-alias": "^2.2.2"
+    "module-alias": "^2.2.2",
+    "zod": "^4.1.13"
   },
   "_moduleAliases": {
     "@": "dist",

@@ -26,6 +26,7 @@ Follow the vertical (feature-based) structure from `docs/architecture.md`:
 - **RBAC**: Managed within the application, not Supabase policies
 - **Exception Handling**: Global exception handler middleware – let all errors bubble up to it
 - **Validation**: Use zod for request schema validation in `api/validations/`
+ - **Linting**: Use `ESLint` configured for `ESNext` (modern JavaScript/TypeScript features)
 
 ## Key Rules
 

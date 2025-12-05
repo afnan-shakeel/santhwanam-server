@@ -12,3 +12,84 @@ generator client {
 datasource db {
   provider = "postgresql"
 }
+
+// Domain: IAM - User
+// See `docs/domain/1.iam.md` for the canonical shape.
+model User {
+  userId        String   @id @default(uuid())
+  externalAuthId String  @unique
+  email         String   @unique
+  firstName     String?
+  lastName      String?
+  isActive      Boolean  @default(true)
+  userMetadata  Json?
+  createdAt     DateTime @default(now())
+  lastSyncedAt  DateTime?
+  userRoles     UserRole[]
+}
+
+// Enums for role scope and user role scope
+enum ScopeType {
+  None
+  Forum
+  Area
+  Unit
+  Agent
+}
+
+model Role {
+  roleId       String   @id @default(uuid())
+  roleCode     String   @unique
+  roleName     String
+  description  String?
+  scopeType    ScopeType
+  isActive     Boolean  @default(true)
+  isSystemRole Boolean  @default(false)
+  createdAt    DateTime @default(now())
+  createdBy    String?
+  updatedAt    DateTime?
+
+  rolePermissions RolePermission[]
+  userRoles       UserRole[]
+}
+
+model Permission {
+  permissionId   String   @id @default(uuid())
+  permissionCode String   @unique
+  permissionName String
+  description    String?
+  module         String?
+  action         String?
+  isActive       Boolean  @default(true)
+  createdAt      DateTime @default(now())
+  createdBy      String?
+
+  rolePermissions RolePermission[]
+}
+
+model RolePermission {
+  rolePermissionId String   @id @default(uuid())
+  role             Role     @relation(fields: [roleId], references: [roleId])
+  roleId           String
+  permission       Permission @relation(fields: [permissionId], references: [permissionId])
+  permissionId     String
+  conditions       Json?
+  assignedAt       DateTime @default(now())
+  assignedBy       String?
+}
+
+model UserRole {
+  userRoleId     String   @id @default(uuid())
+  user           User     @relation(fields: [userId], references: [userId])
+  userId         String
+  role           Role     @relation(fields: [roleId], references: [roleId])
+  roleId         String
+  scopeEntityType ScopeType?
+  scopeEntityId  String?
+  isActive       Boolean  @default(true)
+  assignedAt     DateTime @default(now())
+  assignedBy     String?
+  revokedAt      DateTime?
+  revokedBy      String?
+}
+
