@@ -6,6 +6,7 @@ import docsRouter from '@/docs/router'
 import authRouter from '@/modules/auth/api/router'
 import { approvalWorkflowRouter } from '@/modules/approval-workflow'
 import { organizationBodiesRouter } from '@/modules/organization-bodies'
+import { agentsRouter } from '@/modules/agents'
 import { contextMiddleware } from '@/shared/infrastructure/context'
 import { authenticate } from '@/shared/infrastructure/auth/middleware/authenticate'
 
@@ -38,6 +39,9 @@ app.use('/api/approval-workflow', approvalWorkflowRouter)
 
 // Organization Bodies API
 app.use('/api/organization-bodies', organizationBodiesRouter)
+
+// Agents API
+app.use('/api/agents', agentsRouter)
 
 // Global response handler: support controllers calling `next({ SomeDto, payload, status })`
 app.use(responseHandler)

@@ -27,6 +27,7 @@ model User {
   lastSyncedAt  DateTime?
   userRoles     UserRole[]
   passwordResetTokens PasswordResetToken[]
+  agents        Agent[]
 }
 
 // Enums for role scope and user role scope
@@ -229,6 +230,7 @@ model ApprovalRequest {
   updatedAt         DateTime?
 
   stageExecutions   ApprovalStageExecution[]
+  agents            Agent[]
 
   @@index([entityType, entityId])
   @@index([status])
@@ -309,8 +311,99 @@ model Unit {
   updatedAt       DateTime?
   updatedBy       String?
 
+  agents          Agent[]
+
   @@unique([areaId, unitCode])
   @@index([areaId])
   @@index([forumId])
   @@index([adminUserId])
+}
+
+// Domain: Agents
+// See `docs/domain/4.agents.md` for details
+
+enum RegistrationStatus {
+  Draft
+  PendingApproval
+  Approved
+  Rejected
+}
+
+enum AgentStatus {
+  Active
+  Inactive
+  Suspended
+  Terminated
+}
+
+enum Gender {
+  Male
+  Female
+  Other
+}
+
+model Agent {
+  agentId                  String             @id @default(uuid())
+  agentCode                String
+  registrationStatus       RegistrationStatus @default(Draft)
+  approvalRequest          ApprovalRequest?   @relation(fields: [approvalRequestId], references: [requestId])
+  approvalRequestId        String?
+
+  // Hierarchy (denormalized for query efficiency)
+  unit                     Unit               @relation(fields: [unitId], references: [unitId])
+  unitId                   String
+  areaId                   String
+  forumId                  String
+
+  // User reference (set after approval)
+  user                     User?              @relation(fields: [userId], references: [userId])
+  userId                   String?
+
+  // Personal Details
+  firstName                String
+  middleName               String?
+  lastName                 String
+  dateOfBirth              DateTime
+  gender                   Gender
+
+  // Contact Information
+  contactNumber            String
+  alternateContactNumber   String?
+  email                    String             @unique
+
+  // Address (optional)
+  addressLine1             String?
+  addressLine2             String?
+  city                     String?
+  state                    String?
+  postalCode               String?
+  country                  String?
+
+  // Agent Status
+  agentStatus              AgentStatus        @default(Active)
+
+  // Statistics
+  totalActiveMembers       Int                @default(0)
+  totalRegistrations       Int                @default(0)
+
+  // Metadata
+  joinedDate               DateTime?
+  terminatedDate           DateTime?
+  terminationReason        String?
+
+  // Audit fields
+  createdAt                DateTime           @default(now())
+  createdBy                String
+  updatedAt                DateTime?
+  updatedBy                String?
+
+  @@unique([unitId, agentCode])
+  @@index([unitId])
+  @@index([areaId])
+  @@index([forumId])
+  @@index([userId])
+  @@index([email])
+  @@index([approvalRequestId])
+  @@index([registrationStatus])
+  @@index([agentStatus])
 }
