@@ -4,6 +4,8 @@ import responseHandler from '@/shared/middleware/responseHandler'
 import iamRouter from '@/modules/iam/api/router'
 import docsRouter from '@/docs/router'
 import authRouter from '@/modules/auth/api/router'
+import { approvalWorkflowRouter } from '@/modules/approval-workflow'
+import { organizationBodiesRouter } from '@/modules/organization-bodies'
 import { contextMiddleware } from '@/shared/infrastructure/context'
 import { authenticate } from '@/shared/infrastructure/auth/middleware/authenticate'
 
@@ -30,6 +32,12 @@ app.use('/api/iam', iamRouter)
 
 // Auth API (password reset, login, etc.)
 app.use('/api/auth', authRouter)
+
+// Approval Workflow API
+app.use('/api/approval-workflow', approvalWorkflowRouter)
+
+// Organization Bodies API
+app.use('/api/organization-bodies', organizationBodiesRouter)
 
 // Global response handler: support controllers calling `next({ SomeDto, payload, status })`
 app.use(responseHandler)

@@ -59,7 +59,7 @@ export function requirePermission(permissionCode: string, contextExtractor?: (re
 
         // If no matching context provided, scoped role does not apply
         // (This is conservative; callers should provide contextExtractor when needed)
-        if (role.scopeType !== 'None' && !ur.scopeEntityId) return false
+        // if (role.scopeType !== 'None' && !ur.scopeEntityId) return false
 
         return role.rolePermissions.some(rp => rp.permission.permissionCode === permissionCode)
       })

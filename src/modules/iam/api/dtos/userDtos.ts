@@ -8,8 +8,8 @@ export const UserDto = z.object({
   lastName: z.string().nullable().optional(),
   isActive: z.boolean(),
   userMetadata: z.any().nullable().optional(),
-  createdAt: z.string(),
-  lastSyncedAt: z.string().nullable().optional(),
+  createdAt: z.date(),
+  lastSyncedAt: z.date().nullable().optional(),
 })
 
 export type User = z.infer<typeof UserDto>

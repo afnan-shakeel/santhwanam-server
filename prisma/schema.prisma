@@ -124,3 +124,193 @@ model PasswordResetToken {
   @@index([userId, expiresAt])
 }
 
+// Domain: Approval Workflow
+// See `docs/domain/2.approval_workflow.md` for details
+
+enum WorkflowModule {
+  Membership
+  Wallet
+  Claims
+  Contributions
+  Organization
+}
+
+enum ApproverType {
+  Role
+  SpecificUser
+  Hierarchy
+}
+
+enum HierarchyLevel {
+  Unit
+  Area
+  Forum
+}
+
+enum ApprovalRequestStatus {
+  Pending
+  Approved
+  Rejected
+  Cancelled
+}
+
+enum ApprovalStageStatus {
+  Pending
+  Approved
+  Rejected
+  Skipped
+}
+
+enum ApprovalDecision {
+  Approve
+  Reject
+}
+
+model ApprovalWorkflow {
+  workflowId        String   @id @default(uuid())
+  workflowCode      String   @unique
+  workflowName      String
+  description       String?
+  module            WorkflowModule
+  entityType        String
+  isActive          Boolean  @default(true)
+  requiresAllStages Boolean  @default(true)
+  createdAt         DateTime @default(now())
+  createdBy         String?
+  updatedAt         DateTime?
+  updatedBy         String?
+
+  stages            ApprovalStage[]
+  requests          ApprovalRequest[]
+
+  @@index([workflowCode])
+  @@index([isActive])
+}
+
+model ApprovalStage {
+  stageId        String         @id @default(uuid())
+  workflow       ApprovalWorkflow @relation(fields: [workflowId], references: [workflowId])
+  workflowId     String
+  stageName      String
+  stageOrder     Int
+  approverType   ApproverType
+  roleId         String?
+  userId         String?
+  hierarchyLevel HierarchyLevel?
+  isOptional     Boolean        @default(false)
+  autoApprove    Boolean        @default(false)
+  createdAt      DateTime       @default(now())
+
+  executions     ApprovalStageExecution[]
+
+  @@unique([workflowId, stageOrder])
+  @@index([workflowId, stageOrder])
+}
+
+model ApprovalRequest {
+  requestId         String                @id @default(uuid())
+  workflow          ApprovalWorkflow      @relation(fields: [workflowId], references: [workflowId])
+  workflowId        String
+  entityType        String
+  entityId          String
+  forumId           String?
+  areaId            String?
+  unitId            String?
+  requestedBy       String
+  requestedAt       DateTime
+  status            ApprovalRequestStatus @default(Pending)
+  currentStageOrder Int?
+  approvedBy        String?
+  approvedAt        DateTime?
+  rejectedBy        String?
+  rejectedAt        DateTime?
+  rejectionReason   String?
+  createdAt         DateTime              @default(now())
+  updatedAt         DateTime?
+
+  stageExecutions   ApprovalStageExecution[]
+
+  @@index([entityType, entityId])
+  @@index([status])
+  @@index([requestedBy])
+}
+
+model ApprovalStageExecution {
+  executionId        String               @id @default(uuid())
+  request            ApprovalRequest      @relation(fields: [requestId], references: [requestId])
+  requestId          String
+  stage              ApprovalStage        @relation(fields: [stageId], references: [stageId])
+  stageId            String
+  stageOrder         Int
+  status             ApprovalStageStatus  @default(Pending)
+  assignedApproverId String?
+  reviewedBy         String?
+  reviewedAt         DateTime?
+  decision           ApprovalDecision?
+  comments           String?
+  createdAt          DateTime             @default(now())
+  updatedAt          DateTime?
+
+  @@index([requestId])
+  @@index([assignedApproverId, status])
+}
+
+// Domain: Organization Bodies
+// See `docs/domain/3.organization_bodies.md` for details
+
+model Forum {
+  forumId         String   @id @default(uuid())
+  forumCode       String   @unique
+  forumName       String
+  adminUserId     String
+  establishedDate DateTime
+  createdAt       DateTime @default(now())
+  createdBy       String
+  updatedAt       DateTime?
+  updatedBy       String?
+
+  areas           Area[]
+
+  @@index([forumCode])
+  @@index([adminUserId])
+}
+
+model Area {
+  areaId          String   @id @default(uuid())
+  forum           Forum    @relation(fields: [forumId], references: [forumId])
+  forumId         String
+  areaCode        String
+  areaName        String
+  adminUserId     String
+  establishedDate DateTime
+  createdAt       DateTime @default(now())
+  createdBy       String
+  updatedAt       DateTime?
+  updatedBy       String?
+
+  units           Unit[]
+
+  @@unique([forumId, areaCode])
+  @@index([forumId])
+  @@index([adminUserId])
+}
+
+model Unit {
+  unitId          String   @id @default(uuid())
+  area            Area     @relation(fields: [areaId], references: [areaId])
+  areaId          String
+  forumId         String
+  unitCode        String
+  unitName        String
+  adminUserId     String
+  establishedDate DateTime
+  createdAt       DateTime @default(now())
+  createdBy       String
+  updatedAt       DateTime?
+  updatedBy       String?
+
+  @@unique([areaId, unitCode])
+  @@index([areaId])
+  @@index([forumId])
+  @@index([adminUserId])
+}
