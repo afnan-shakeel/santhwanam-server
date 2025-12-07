@@ -312,6 +312,7 @@ model Unit {
   updatedBy       String?
 
   agents          Agent[]
+  members         Member[]
 
   @@unique([areaId, unitCode])
   @@index([areaId])
@@ -397,6 +398,9 @@ model Agent {
   updatedAt                DateTime?
   updatedBy                String?
 
+  // Relations
+  members                  Member[]
+
   @@unique([unitId, agentCode])
   @@index([unitId])
   @@index([areaId])
@@ -406,4 +410,302 @@ model Agent {
   @@index([approvalRequestId])
   @@index([registrationStatus])
   @@index([agentStatus])
+}
+
+// Domain: Members
+// See `docs/domain/5.membership.md` for details
+
+enum MemberRegistrationStatus {
+  Draft
+  PendingApproval
+  Approved
+  Rejected
+}
+
+enum MemberRegistrationStep {
+  PersonalDetails
+  Nominees
+  DocumentsPayment
+  Completed
+}
+
+enum MemberStatus {
+  Active
+  Frozen
+  Suspended
+  Closed
+  Deceased
+}
+
+enum RelationType {
+  Father
+  Mother
+  Spouse
+  Son
+  Daughter
+  Brother
+  Sister
+  Other
+}
+
+enum IdProofType {
+  NationalID
+  Passport
+  DrivingLicense
+  VoterID
+  Other
+}
+
+enum DocumentType {
+  NationalID
+  Passport
+  DrivingLicense
+  BirthCertificate
+  ResidenceCard
+  AddressProof_UtilityBill
+  AddressProof_BankStatement
+  AddressProof_RentalAgreement
+  MemberPhoto
+  NomineeIDProof
+  Other
+}
+
+enum DocumentCategory {
+  MemberIdentity
+  MemberAddress
+  MemberPhoto
+  NomineeProof
+  Other
+}
+
+enum DocumentVerificationStatus {
+  Pending
+  Verified
+  Rejected
+}
+
+enum CollectionMode {
+  Cash
+  BankTransfer
+  Cheque
+  Online
+}
+
+enum PaymentApprovalStatus {
+  PendingApproval
+  Approved
+  Rejected
+}
+
+model Member {
+  memberId                 String                    @id @default(uuid())
+  memberCode               String                    @unique
+
+  // Registration tracking
+  registrationStatus       MemberRegistrationStatus  @default(Draft)
+  registrationStep         MemberRegistrationStep    @default(PersonalDetails)
+  approvalRequestId        String?
+
+  // Personal Details
+  firstName                String
+  middleName               String?
+  lastName                 String
+  dateOfBirth              DateTime
+  gender                   Gender
+  contactNumber            String
+  alternateContactNumber   String?
+  email                    String?
+
+  // Address
+  addressLine1             String
+  addressLine2             String?
+  city                     String
+  state                    String
+  postalCode               String
+  country                  String
+
+  // Membership details
+  tier                     MembershipTier            @relation(fields: [tierId], references: [tierId])
+  tierId                   String
+
+  // Hierarchy
+  agent                    Agent                     @relation(fields: [agentId], references: [agentId])
+  agentId                  String
+  unit                     Unit                      @relation(fields: [unitId], references: [unitId])
+  unitId                   String
+  areaId                   String
+  forumId                  String
+
+  // Member Status (after approval)
+  memberStatus             MemberStatus?
+
+  // Suspension tracking
+  suspensionCounter        Int                       @default(0)
+  suspensionReason         String?
+  suspendedAt              DateTime?
+
+  // Timestamps
+  createdAt                DateTime                  @default(now())
+  registeredAt             DateTime?
+  updatedAt                DateTime?
+
+  // Audit
+  createdBy                String
+  approvedBy               String?
+
+  // Relations
+  nominees                 Nominee[]
+  documents                MemberDocument[]
+  payment                  RegistrationPayment?
+
+  @@index([memberCode])
+  @@index([registrationStatus])
+  @@index([memberStatus])
+  @@index([agentId])
+  @@index([unitId])
+  @@index([tierId])
+  @@index([approvalRequestId])
+}
+
+model Nominee {
+  nomineeId                String                    @id @default(uuid())
+  member                   Member                    @relation(fields: [memberId], references: [memberId])
+  memberId                 String
+
+  // Nominee details
+  name                     String
+  relationType             RelationType
+  dateOfBirth              DateTime
+  contactNumber            String
+  alternateContactNumber   String?
+
+  // Address
+  addressLine1             String
+  addressLine2             String?
+  city                     String
+  state                    String
+  postalCode               String
+  country                  String
+
+  // ID Proof
+  idProofType              IdProofType
+  idProofNumber            String
+  idProofDocumentId        String?
+
+  // Priority (Phase 2 - default to 1)
+  priority                 Int                       @default(1)
+
+  // Status
+  isActive                 Boolean                   @default(true)
+
+  // Timestamps
+  createdAt                DateTime                  @default(now())
+  updatedAt                DateTime?
+
+  // Relations
+  documents                MemberDocument[]
+
+  @@index([memberId])
+  @@index([memberId, isActive])
+  @@unique([memberId, priority])
+}
+
+model MemberDocument {
+  documentId               String                    @id @default(uuid())
+  member                   Member                    @relation(fields: [memberId], references: [memberId])
+  memberId                 String
+  nominee                  Nominee?                  @relation(fields: [nomineeId], references: [nomineeId])
+  nomineeId                String?
+
+  // Document details
+  documentType             DocumentType
+  documentCategory         DocumentCategory
+  documentName             String
+
+  // File storage
+  fileUrl                  String
+  fileSize                 Int
+  mimeType                 String
+
+  // Metadata
+  uploadedBy               String
+  uploadedAt               DateTime                  @default(now())
+
+  // Verification
+  verificationStatus       DocumentVerificationStatus @default(Pending)
+  verifiedBy               String?
+  verifiedAt               DateTime?
+  rejectionReason          String?
+
+  // Optional
+  expiryDate               DateTime?
+
+  // Status
+  isActive                 Boolean                   @default(true)
+
+  // Timestamps
+  createdAt                DateTime                  @default(now())
+  updatedAt                DateTime?
+
+  @@index([memberId])
+  @@index([nomineeId])
+  @@index([memberId, documentCategory, isActive])
+}
+
+model RegistrationPayment {
+  paymentId                String                    @id @default(uuid())
+  member                   Member                    @relation(fields: [memberId], references: [memberId])
+  memberId                 String                    @unique
+
+  // Payment details
+  registrationFee          Decimal                   @db.Decimal(15, 2)
+  advanceDeposit           Decimal                   @db.Decimal(15, 2)
+  totalAmount              Decimal                   @db.Decimal(15, 2)
+
+  // Collection details
+  collectedBy              String // AgentId
+  collectionDate           DateTime
+  collectionMode           CollectionMode
+  referenceNumber          String?
+
+  // Approval status
+  approvalStatus           PaymentApprovalStatus     @default(PendingApproval)
+  approvedBy               String?
+  approvedAt               DateTime?
+  rejectionReason          String?
+
+  // Timestamps
+  createdAt                DateTime                  @default(now())
+  updatedAt                DateTime?
+
+  @@index([memberId])
+}
+
+model MembershipTier {
+  tierId                   String                    @id @default(uuid())
+  tierCode                 String                    @unique
+  tierName                 String
+  description              String?
+
+  // Financial amounts
+  registrationFee          Decimal                   @db.Decimal(15, 2)
+  advanceDepositAmount     Decimal                   @db.Decimal(15, 2)
+  contributionAmount       Decimal                   @db.Decimal(15, 2)
+  deathBenefitAmount       Decimal                   @db.Decimal(15, 2)
+
+  // Status
+  isActive                 Boolean                   @default(true)
+  isDefault                Boolean                   @default(false)
+
+  // Timestamps
+  createdAt                DateTime                  @default(now())
+  createdBy                String
+  updatedAt                DateTime?
+
+  // Relations
+  members                  Member[]
+
+  @@index([tierCode])
+  @@index([isActive])
+  @@index([isDefault])
 }

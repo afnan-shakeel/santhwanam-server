@@ -2,17 +2,17 @@
   "openapi": "3.0.3",
   "info": {
     "title": "Santhwanam API",
-    "version": "0.1.0",
-    "description": "Minimal OpenAPI spec for IAM (permissions & roles)"
+    "version": "1.0.0",
+    "description": "API documentation for Santhwanam server"
   },
   "servers": [
     {
       "url": "{baseUrl}",
-      "description": "API base URL (set before importing to Postman)",
+      "description": "API base URL",
       "variables": {
         "baseUrl": {
           "default": "http://localhost:3000",
-          "description": "Base URL for API (e.g. http://localhost:3000 or https://api.example.com)"
+          "description": "Base URL (e.g., http://localhost:3000 or https://api.example.com)"
         }
       }
     }
@@ -21,105 +21,101 @@
     { "BearerAuth": [] }
   ],
   "paths": {
-    "/api/iam/permissions": {
-      "get": {
-        "summary": "List permissions",
-        "responses": {
-          "200": {
-            "description": "A list of permissions",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "array",
-                  "items": { "$ref": "#/components/schemas/Permission" }
-                }
-              }
-            }
-          }
-        }
-      },
+    "/api/auth/login": {
       "post": {
-        "summary": "Create permission",
+        "tags": ["Authentication"],
+        "summary": "User login",
+        "security": [],
         "requestBody": {
           "required": true,
           "content": {
             "application/json": {
-              "schema": { "$ref": "#/components/schemas/CreatePermission" }
+              "schema": {
+                "type": "object",
+                "required": ["email", "password"],
+                "properties": {
+                  "email": { "type": "string", "format": "email" },
+                  "password": { "type": "string" }
+                }
+              }
             }
           }
         },
-        "responses": { "201": { "description": "Created", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/Permission" } } } } }
+        "responses": {
+          "200": {
+            "description": "Login successful",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "token": { "type": "string" },
+                    "user": {
+                      "type": "object",
+                      "properties": {
+                        "userId": { "type": "string" },
+                        "email": { "type": "string" },
+                        "firstName": { "type": "string" },
+                        "lastName": { "type": "string" }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": { "description": "Invalid credentials" }
+        }
       }
     },
-    "/api/iam/roles": {
-      "get": {
-        "summary": "List roles",
-        "responses": {
-          "200": { "description": "A list of roles", "content": { "application/json": { "schema": { "type": "array", "items": { "$ref": "#/components/schemas/Role" } } } } }
-        }
-      },
+    "/api/auth/reset-password/request": {
       "post": {
-        "summary": "Create role",
+        "tags": ["Authentication"],
+        "summary": "Request password reset",
+        "security": [],
         "requestBody": {
           "required": true,
           "content": {
-            "application/json": { "schema": { "$ref": "#/components/schemas/CreateRole" } }
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": ["email"],
+                "properties": {
+                  "email": { "type": "string", "format": "email" }
+                }
+              }
+            }
           }
         },
-        "responses": { "201": { "description": "Created", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/Role" } } } } }
+        "responses": {
+          "200": { "description": "Reset email sent" },
+          "404": { "description": "User not found" }
+        }
       }
-    }
-    ,
-    "/api/iam/users/search": {
+    },
+    "/api/auth/reset-password": {
       "post": {
-        "summary": "Search users",
+        "tags": ["Authentication"],
+        "summary": "Reset password",
+        "security": [],
         "requestBody": {
           "required": true,
           "content": {
-            "application/json": { "schema": { "$ref": "#/components/schemas/UsersSearchRequest" } }
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": ["token", "newPassword"],
+                "properties": {
+                  "token": { "type": "string" },
+                  "newPassword": { "type": "string", "minLength": 8 }
+                }
+              }
+            }
           }
         },
         "responses": {
-          "200": { "description": "Search results", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/UsersSearchResponse" } } } }
-        }
-      }
-    },
-    "/api/iam/users/{id}": {
-      "patch": {
-        "summary": "Update user",
-        "parameters": [
-          { "name": "id", "in": "path", "required": true, "schema": { "type": "string" } }
-        ],
-        "requestBody": {
-          "required": true,
-          "content": { "application/json": { "schema": { "$ref": "#/components/schemas/UpdateUser" } } }
-        },
-        "responses": {
-          "200": { "description": "Updated user", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/User" } } } }
-        }
-      }
-    },
-    "/api/iam/users/assign-role": {
-      "post": {
-        "summary": "Assign a role to a user",
-        "requestBody": {
-          "required": true,
-          "content": { "application/json": { "schema": { "$ref": "#/components/schemas/AssignRoleRequest" } } }
-        },
-        "responses": {
-          "201": { "description": "Role assigned" }
-        }
-      }
-    },
-    "/api/iam/users/revoke-role": {
-      "post": {
-        "summary": "Revoke a role from a user",
-        "requestBody": {
-          "required": true,
-          "content": { "application/json": { "schema": { "$ref": "#/components/schemas/RevokeRoleRequest" } } }
-        },
-        "responses": {
-          "200": { "description": "Role revoked" }
+          "200": { "description": "Password reset successful" },
+          "400": { "description": "Invalid or expired token" }
         }
       }
     }
@@ -130,120 +126,8 @@
         "type": "http",
         "scheme": "bearer",
         "bearerFormat": "JWT",
-        "description": "Use a Bearer token. In Postman set an environment variable named 'authToken' and in the Authorization header use 'Bearer {{authToken}}'."
+        "description": "JWT token obtained from login. In Postman, set variable: authToken={{token}}"
       }
-    },
-    "schemas": {
-      "Permission": {
-        "type": "object",
-        "properties": {
-          "permissionId": { "type": "string" },
-          "permissionCode": { "type": "string" },
-          "permissionName": { "type": "string" },
-          "description": { "type": "string" },
-          "module": { "type": "string" },
-          "action": { "type": "string" },
-          "isActive": { "type": "boolean" },
-          "createdAt": { "type": "string", "format": "date-time" }
-        }
-      },
-      "CreatePermission": {
-        "type": "object",
-        "required": ["permissionCode", "permissionName"],
-        "properties": {
-          "permissionCode": { "type": "string" },
-          "permissionName": { "type": "string" },
-          "description": { "type": "string" },
-          "module": { "type": "string" },
-          "action": { "type": "string" }
-        }
-      },
-      "Role": {
-        "type": "object",
-        "properties": {
-          "roleId": { "type": "string" },
-          "roleCode": { "type": "string" },
-          "roleName": { "type": "string" },
-          "description": { "type": "string" },
-          "scopeType": { "type": "string", "enum": ["None","Forum","Area","Unit","Agent"] },
-          "isActive": { "type": "boolean" },
-          "isSystemRole": { "type": "boolean" },
-          "createdAt": { "type": "string", "format": "date-time" }
-        }
-      },
-      "CreateRole": {
-        "type": "object",
-        "required": ["roleCode","roleName","scopeType"],
-        "properties": {
-          "roleCode": { "type": "string" },
-          "roleName": { "type": "string" },
-          "description": { "type": "string" },
-          "scopeType": { "type": "string", "enum": ["None","Forum","Area","Unit","Agent"] },
-          "isSystemRole": { "type": "boolean" }
-        }
-      }
-        ,
-        "User": {
-          "type": "object",
-          "properties": {
-            "userId": { "type": "string" },
-            "externalAuthId": { "type": "string" },
-            "email": { "type": "string", "format": "email" },
-            "firstName": { "type": "string" },
-            "lastName": { "type": "string" },
-            "isActive": { "type": "boolean" },
-            "userMetadata": { "type": "object" },
-            "createdAt": { "type": "string", "format": "date-time" },
-            "lastSyncedAt": { "type": "string", "format": "date-time" }
-          }
-        },
-        "UsersSearchRequest": {
-          "type": "object",
-          "properties": {
-            "searchTerm": { "type": "string" },
-            "searchFields": { "type": "array", "items": { "type": "string" } },
-            "filters": { "type": "array", "items": { "type": "object" } },
-            "page": { "type": "integer" },
-            "pageSize": { "type": "integer" }
-          }
-        },
-        "UsersSearchResponse": {
-          "type": "object",
-          "properties": {
-            "items": { "type": "array", "items": { "$ref": "#/components/schemas/User" } },
-            "total": { "type": "integer" },
-            "page": { "type": "integer" },
-            "pageSize": { "type": "integer" },
-            "totalPages": { "type": "integer" }
-          }
-        },
-        "UpdateUser": {
-          "type": "object",
-          "properties": {
-            "email": { "type": "string", "format": "email" },
-            "firstName": { "type": "string" },
-            "lastName": { "type": "string" },
-            "isActive": { "type": "boolean" },
-            "userMetadata": { "type": "object" }
-          }
-        },
-        "AssignRoleRequest": {
-          "type": "object",
-          "required": ["userId","roleId"],
-          "properties": {
-            "userId": { "type": "string" },
-            "roleId": { "type": "string" },
-            "scopeEntityType": { "type": "string", "enum": ["None","Forum","Area","Unit","Agent"] },
-            "scopeEntityId": { "type": "string" }
-          }
-        },
-        "RevokeRoleRequest": {
-          "type": "object",
-          "required": ["userRoleId"],
-          "properties": {
-            "userRoleId": { "type": "string" }
-          }
-        }
     }
   }
 }

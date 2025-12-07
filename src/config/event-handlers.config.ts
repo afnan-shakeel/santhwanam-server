@@ -5,6 +5,11 @@ import { logger } from '@/shared/utils/logger';
 import { agentService, agentRepo } from '@/modules/agents';
 import { ActivateAgentOnApprovalHandler, RejectAgentOnApprovalHandler } from '@/modules/agents/application/event-handlers';
 
+// Members module
+import { memberRepo, registrationPaymentRepo, memberDocumentRepo } from '@/modules/members';
+import { ActivateMemberOnApprovalHandler } from '@/modules/members/application/event-handlers/activate-member-on-approval.handler';
+import { RejectMemberOnApprovalHandler } from '@/modules/members/application/event-handlers/reject-member-on-approval.handler';
+
 // IAM module  
 import { PrismaUserRepository } from '@/modules/iam/infrastructure/prisma/userRepository';
 import { PrismaRoleRepository } from '@/modules/iam/infrastructure/prisma/roleRepository';
@@ -32,6 +37,19 @@ export function registerEventHandlers(): void {
 
   const rejectAgentHandler = new RejectAgentOnApprovalHandler(agentService);
 
+  // Member approval handlers
+  const activateMemberHandler = new ActivateMemberOnApprovalHandler(
+    memberRepo,
+    memberDocumentRepo,
+    registrationPaymentRepo,
+    agentRepo
+  );
+
+  const rejectMemberHandler = new RejectMemberOnApprovalHandler(
+    memberRepo,
+    registrationPaymentRepo
+  );
+
   // Subscribe to approval workflow events
   eventBus.subscribe(
     'approval.request.approved',
@@ -43,5 +61,16 @@ export function registerEventHandlers(): void {
     rejectAgentHandler
   );
 
+  eventBus.subscribe(
+    'approval.request.approved',
+    activateMemberHandler
+  );
+
+  eventBus.subscribe(
+    'approval.request.rejected',
+    rejectMemberHandler
+  );
+
   logger.info('Event handlers registered successfully');
 }
+
