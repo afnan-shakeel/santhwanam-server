@@ -47,5 +47,5 @@ const controller = new AgentsController(
 // Export router
 export const agentsRouter = createAgentsRouter(controller);
 
-// Export service for use in other modules
-export { agentService };
+// Export service and repositories for use in other modules
+export { agentService, agentRepo };

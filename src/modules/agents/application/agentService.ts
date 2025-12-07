@@ -5,6 +5,16 @@ import { AgentRepository } from "../domain/repositories";
 import { Agent, RegistrationStatus, AgentStatus, Gender } from "../domain/entities";
 import { BadRequestError, NotFoundError } from "@/shared/utils/error-handling/httpErrors";
 import prisma from "@/shared/infrastructure/prisma/prismaClient";
+import { eventBus } from "@/shared/domain/events/event-bus";
+import {
+  AgentRegistrationStartedEvent,
+  AgentDraftUpdatedEvent,
+  AgentRegistrationSubmittedEvent,
+  AgentActivatedEvent,
+  AgentRegistrationRejectedEvent,
+  AgentUpdatedEvent,
+  AgentTerminatedEvent,
+} from "../domain/events";
 
 interface StartRegistrationInput {
   unitId: string;
@@ -133,7 +143,24 @@ export class AgentService {
         tx
       );
 
-      // TODO: Emit AgentRegistrationStarted event
+      // Publish event
+      await eventBus.publish(
+        new AgentRegistrationStartedEvent(
+          {
+            agentId: agent.agentId,
+            agentCode: agent.agentCode,
+            unitId: agent.unitId,
+            areaId: agent.areaId,
+            forumId: agent.forumId,
+            email: agent.email,
+            firstName: agent.firstName,
+            lastName: agent.lastName,
+            createdBy: agent.createdBy,
+          },
+          input.createdBy
+        )
+      );
+
       return agent;
     });
   }
@@ -185,7 +212,19 @@ export class AgentService {
         tx
       );
 
-      // TODO: Emit AgentDraftUpdated event
+      // Publish event
+      await eventBus.publish(
+        new AgentDraftUpdatedEvent(
+          {
+            agentId: updated.agentId,
+            agentCode: updated.agentCode,
+            updatedBy: input.updatedBy,
+            updatedFields: Object.keys(input).filter(k => k !== 'updatedBy'),
+          },
+          input.updatedBy
+        )
+      );
+
       return updated;
     });
   }
@@ -242,7 +281,6 @@ export class AgentService {
         tx
       );
 
-      // TODO: Emit AgentRegistrationSubmitted event
       return updated;
     });
   }
@@ -273,7 +311,19 @@ export class AgentService {
         tx
       );
 
-      // TODO: Emit AgentUpdated event
+      // Publish event
+      await eventBus.publish(
+        new AgentUpdatedEvent(
+          {
+            agentId: updated.agentId,
+            agentCode: updated.agentCode,
+            updatedBy: input.updatedBy,
+            updatedFields: Object.keys(input).filter(k => k !== 'updatedBy'),
+          },
+          input.updatedBy
+        )
+      );
+
       return updated;
     });
   }
@@ -311,7 +361,20 @@ export class AgentService {
         tx
       );
 
-      // TODO: Emit AgentTerminated event
+      // Publish event
+      await eventBus.publish(
+        new AgentTerminatedEvent(
+          {
+            agentId: updated.agentId,
+            agentCode: updated.agentCode,
+            terminationReason,
+            terminatedBy,
+            terminatedDate: new Date(),
+          },
+          terminatedBy
+        )
+      );
+
       return updated;
     });
   }
@@ -403,6 +466,11 @@ export class AgentService {
     rejectionReason?: string
   ): Promise<void> {
     return prisma.$transaction(async (tx: any) => {
+      const agent = await this.agentRepository.findById(agentId, tx);
+      if (!agent) {
+        throw new NotFoundError("Agent not found");
+      }
+
       await this.agentRepository.updateRegistrationStatus(
         agentId,
         RegistrationStatus.Rejected,
@@ -411,7 +479,18 @@ export class AgentService {
         tx
       );
 
-      // TODO: Emit AgentRegistrationRejected event
+      // Publish event
+      await eventBus.publish(
+        new AgentRegistrationRejectedEvent(
+          {
+            agentId: agent.agentId,
+            agentCode: agent.agentCode,
+            rejectedBy,
+            rejectionReason,
+          },
+          rejectedBy
+        )
+      );
     });
   }
 }

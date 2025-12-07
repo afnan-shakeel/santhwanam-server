@@ -9,11 +9,17 @@ import { organizationBodiesRouter } from '@/modules/organization-bodies'
 import { agentsRouter } from '@/modules/agents'
 import { contextMiddleware } from '@/shared/infrastructure/context'
 import { authenticate } from '@/shared/infrastructure/auth/middleware/authenticate'
+import { registerEventHandlers } from '@/config/event-handlers.config'
+import { logger } from '@/shared/utils/logger'
 
 const app = express();
 
 // Parse JSON first so auth/context can read body if needed
 app.use(express.json());
+
+// Register event handlers BEFORE routes
+registerEventHandlers();
+logger.info('Event system initialized');
 
 // Authentication middleware should run before contextMiddleware so
 // the request user (if any) is captured into the ALS context.

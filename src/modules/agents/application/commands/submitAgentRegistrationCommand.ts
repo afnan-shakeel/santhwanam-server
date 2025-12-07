@@ -6,6 +6,8 @@ import { asyncLocalStorage } from "@/shared/infrastructure/context/AsyncLocalSto
 import { BadRequestError } from "@/shared/utils/error-handling/httpErrors";
 import { ApprovalRequestService } from "@/modules/approval-workflow/application/approvalRequestService";
 import prisma from "@/shared/infrastructure/prisma/prismaClient";
+import { eventBus } from "@/shared/domain/events/event-bus";
+import { AgentRegistrationSubmittedEvent } from "../../domain/events";
 
 export interface SubmitAgentRegistrationCommand {
   agentId: string;
@@ -48,6 +50,23 @@ export class SubmitAgentRegistrationHandler {
       {
         approvalRequestId: approvalResult.request.requestId,
       }
+    );
+
+    // Publish event
+    await eventBus.publish(
+      new AgentRegistrationSubmittedEvent(
+        {
+          agentId: agent.agentId,
+          agentCode: agent.agentCode,
+          approvalRequestId: approvalResult.request.requestId,
+          unitId: agent.unitId,
+          areaId: agent.areaId,
+          forumId: agent.forumId,
+          email: agent.email,
+          submittedBy: actorId,
+        },
+        actorId
+      )
     );
 
     return {
