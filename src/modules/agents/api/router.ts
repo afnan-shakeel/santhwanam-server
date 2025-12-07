@@ -11,9 +11,13 @@ import {
   updateAgentSchema,
   terminateAgentSchema,
 } from "./validators";
+import { searchValidationSchema } from "@/shared/validators/searchValidator";
 
 export function createAgentsRouter(controller: AgentsController): Router {
   const router = Router();
+
+  // Search
+  router.post("/search", validateBody(searchValidationSchema), controller.searchAgents);
 
   // Agent registration workflow
   router.post(

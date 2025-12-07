@@ -6,6 +6,7 @@ import { Agent, RegistrationStatus, AgentStatus, Gender } from "../domain/entiti
 import { BadRequestError, NotFoundError } from "@/shared/utils/error-handling/httpErrors";
 import prisma from "@/shared/infrastructure/prisma/prismaClient";
 import { eventBus } from "@/shared/domain/events/event-bus";
+import { searchService, SearchRequest } from "@/shared/infrastructure/search";
 import {
   AgentRegistrationStartedEvent,
   AgentDraftUpdatedEvent,
@@ -491,6 +492,16 @@ export class AgentService {
           rejectedBy
         )
       );
+    });
+  }
+
+  /**
+   * Search agents with advanced filtering
+   */
+  async searchAgents(searchRequest: Omit<SearchRequest, 'model'>) {
+    return searchService.execute({
+      ...searchRequest,
+      model: "Agent"
     });
   }
 }

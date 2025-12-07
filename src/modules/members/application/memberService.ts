@@ -29,6 +29,7 @@ import {
 } from "@/shared/utils/error-handling/httpErrors";
 import prisma from "@/shared/infrastructure/prisma/prismaClient";
 import { eventBus } from "@/shared/domain/events/event-bus";
+import { searchService, SearchRequest } from "@/shared/infrastructure/search";
 import {
   MemberRegistrationStartedEvent,
   MemberDraftSavedEvent,
@@ -990,5 +991,15 @@ export class MemberService {
       page,
       limit,
     };
+  }
+
+  /**
+   * Search members with advanced filtering
+   */
+  async searchMembers(searchRequest: Omit<SearchRequest, 'model'>) {
+    return searchService.execute({
+      ...searchRequest,
+      model: "Member"
+    });
   }
 }

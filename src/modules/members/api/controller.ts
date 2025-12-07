@@ -273,4 +273,13 @@ export class MembersController {
     });
     next({ dto: "Success", data: { success: true }, status: 200 });
   };
+
+  /**
+   * POST /api/members/search
+   * Search members with advanced filtering
+   */
+  searchMembers = async (req: Request, res: Response, next: NextFunction) => {
+    const result = await this.memberService.searchMembers(req.body);
+    next({ dto: "SearchResult", data: result, status: 200 });
+  };
 }

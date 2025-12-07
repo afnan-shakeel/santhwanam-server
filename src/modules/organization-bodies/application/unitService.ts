@@ -8,6 +8,7 @@ import type { Unit } from '../domain/entities';
 import type { UserRepository } from '@/modules/iam/domain/repositories';
 import { BadRequestError, NotFoundError } from '@/shared/utils/error-handling/httpErrors';
 import prisma from '@/shared/infrastructure/prisma/prismaClient';
+import { searchService, SearchRequest } from '@/shared/infrastructure/search';
 
 export class UnitService {
   constructor(
@@ -165,5 +166,15 @@ export class UnitService {
    */
   async listUnitsByForum(forumId: string): Promise<Unit[]> {
     return this.unitRepo.listByForum(forumId);
+  }
+
+  /**
+   * Search units with advanced filtering
+   */
+  async searchUnits(searchRequest: Omit<SearchRequest, 'model'>) {
+    return searchService.execute({
+      ...searchRequest,
+      model: 'Unit'
+    });
   }
 }

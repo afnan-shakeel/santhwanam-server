@@ -133,4 +133,13 @@ export class AgentsController {
     const result = await this.agentService.listByForum(forumId, skip, take);
     next({ dto: "AgentList", data: result, status: 200 });
   };
+
+  /**
+   * POST /api/agents/search
+   * Search agents with advanced filtering
+   */
+  searchAgents = async (req: Request, res: Response, next: NextFunction) => {
+    const result = await this.agentService.searchAgents(req.body);
+    next({ dto: "SearchResult", data: result, status: 200 });
+  };
 }

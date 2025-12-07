@@ -8,6 +8,7 @@ import type { Forum } from '../domain/entities';
 import type { UserRepository } from '@/modules/iam/domain/repositories';
 import { BadRequestError, NotFoundError, ForbiddenError } from '@/shared/utils/error-handling/httpErrors';
 import prisma from '@/shared/infrastructure/prisma/prismaClient';
+import { searchService, SearchRequest } from '@/shared/infrastructure/search';
 
 export class ForumService {
   constructor(
@@ -155,5 +156,15 @@ export class ForumService {
    */
   async listForums(): Promise<Forum[]> {
     return this.forumRepo.listAll();
+  }
+
+  /**
+   * Search forums with advanced filtering
+   */
+  async searchForums(searchRequest: Omit<SearchRequest, 'model'>) {
+    return searchService.execute({
+      ...searchRequest,
+      model: 'Forum'
+    });
   }
 }

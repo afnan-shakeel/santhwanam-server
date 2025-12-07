@@ -8,6 +8,7 @@ import type { Area } from '../domain/entities';
 import type { UserRepository } from '@/modules/iam/domain/repositories';
 import { BadRequestError, NotFoundError } from '@/shared/utils/error-handling/httpErrors';
 import prisma from '@/shared/infrastructure/prisma/prismaClient';
+import { searchService, SearchRequest } from '@/shared/infrastructure/search';
 
 export class AreaService {
   constructor(
@@ -151,5 +152,15 @@ export class AreaService {
    */
   async listAreasByForum(forumId: string): Promise<Area[]> {
     return this.areaRepo.listByForum(forumId);
+  }
+
+  /**
+   * Search areas with advanced filtering
+   */
+  async searchAreas(searchRequest: Omit<SearchRequest, 'model'>) {
+    return searchService.execute({
+      ...searchRequest,
+      model: 'Area'
+    });
   }
 }

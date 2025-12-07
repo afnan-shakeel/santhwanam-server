@@ -134,4 +134,20 @@ export class OrganizationBodiesController {
     const units = await this.unitService.listUnitsByForum(forumId);
     next({ dto: 'UnitList', data: units, status: 200 });
   };
+
+  // Search endpoints
+  searchForums = async (req: Request, res: Response, next: NextFunction) => {
+    const result = await this.forumService.searchForums(req.body);
+    next({ dto: 'SearchResult', data: result, status: 200 });
+  };
+
+  searchAreas = async (req: Request, res: Response, next: NextFunction) => {
+    const result = await this.areaService.searchAreas(req.body);
+    next({ dto: 'SearchResult', data: result, status: 200 });
+  };
+
+  searchUnits = async (req: Request, res: Response, next: NextFunction) => {
+    const result = await this.unitService.searchUnits(req.body);
+    next({ dto: 'SearchResult', data: result, status: 200 });
+  };
 }

@@ -373,9 +373,2099 @@
           "200": { "description": "Role updated" }
         }
       }
+    },
+    "/api/approval-workflows/workflows": {
+      "post": {
+        "tags": ["Approval Workflow - Workflows"],
+        "summary": "Create a new approval workflow",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": ["workflowCode", "workflowName", "module", "entityType", "stages"],
+                "properties": {
+                  "workflowCode": { "type": "string" },
+                  "workflowName": { "type": "string" },
+                  "description": { "type": "string" },
+                  "module": { "type": "string", "enum": ["Membership", "Wallet", "Claims", "Contributions", "Organization"] },
+                  "entityType": { "type": "string" },
+                  "isActive": { "type": "boolean" },
+                  "requiresAllStages": { "type": "boolean" },
+                  "stages": {
+                    "type": "array",
+                    "items": {
+                      "type": "object",
+                      "properties": {
+                        "stageName": { "type": "string" },
+                        "stageOrder": { "type": "integer" },
+                        "approverType": { "type": "string", "enum": ["Role", "SpecificUser", "Hierarchy"] },
+                        "roleId": { "type": "string", "format": "uuid", "nullable": true },
+                        "userId": { "type": "string", "format": "uuid", "nullable": true },
+                        "hierarchyLevel": { "type": "string", "enum": ["Unit", "Area", "Forum"], "nullable": true },
+                        "isOptional": { "type": "boolean" },
+                        "autoApprove": { "type": "boolean" }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Workflow created successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "workflowId": { "type": "string", "format": "uuid" },
+                    "workflowCode": { "type": "string" },
+                    "workflowName": { "type": "string" }
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "get": {
+        "tags": ["Approval Workflow - Workflows"],
+        "summary": "List all active workflows",
+        "responses": {
+          "200": {
+            "description": "List of active workflows",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "properties": {
+                      "workflowId": { "type": "string", "format": "uuid" },
+                      "workflowCode": { "type": "string" },
+                      "workflowName": { "type": "string" },
+                      "module": { "type": "string" },
+                      "isActive": { "type": "boolean" }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/approval-workflows/workflows/{workflowId}": {
+      "get": {
+        "tags": ["Approval Workflow - Workflows"],
+        "summary": "Get workflow by ID",
+        "parameters": [
+          {
+            "name": "workflowId",
+            "in": "path",
+            "required": true,
+            "schema": { "type": "string", "format": "uuid" }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Workflow details",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "workflowId": { "type": "string", "format": "uuid" },
+                    "workflowCode": { "type": "string" },
+                    "workflowName": { "type": "string" },
+                    "module": { "type": "string" },
+                    "stages": { "type": "array" }
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "patch": {
+        "tags": ["Approval Workflow - Workflows"],
+        "summary": "Update workflow",
+        "parameters": [
+          {
+            "name": "workflowId",
+            "in": "path",
+            "required": true,
+            "schema": { "type": "string", "format": "uuid" }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "workflowName": { "type": "string" },
+                  "description": { "type": "string", "nullable": true },
+                  "isActive": { "type": "boolean" },
+                  "requiresAllStages": { "type": "boolean" }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": { "description": "Workflow updated successfully" }
+        }
+      }
+    },
+    "/api/approval-workflows/workflows/code/{workflowCode}": {
+      "get": {
+        "tags": ["Approval Workflow - Workflows"],
+        "summary": "Get workflow by code",
+        "parameters": [
+          {
+            "name": "workflowCode",
+            "in": "path",
+            "required": true,
+            "schema": { "type": "string" }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Workflow details",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "workflowId": { "type": "string", "format": "uuid" },
+                    "workflowCode": { "type": "string" },
+                    "workflowName": { "type": "string" }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/approval-workflows/workflows/all": {
+      "get": {
+        "tags": ["Approval Workflow - Workflows"],
+        "summary": "List all workflows (including inactive)",
+        "responses": {
+          "200": {
+            "description": "List of all workflows",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "properties": {
+                      "workflowId": { "type": "string", "format": "uuid" },
+                      "workflowCode": { "type": "string" },
+                      "isActive": { "type": "boolean" }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/approval-workflows/requests": {
+      "post": {
+        "tags": ["Approval Workflow - Requests"],
+        "summary": "Submit a new approval request",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": ["workflowCode", "entityType", "entityId"],
+                "properties": {
+                  "workflowCode": { "type": "string" },
+                  "entityType": { "type": "string" },
+                  "entityId": { "type": "string", "format": "uuid" },
+                  "forumId": { "type": "string", "format": "uuid", "nullable": true },
+                  "areaId": { "type": "string", "format": "uuid", "nullable": true },
+                  "unitId": { "type": "string", "format": "uuid", "nullable": true }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Approval request submitted",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "requestId": { "type": "string", "format": "uuid" },
+                    "status": { "type": "string" }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/approval-workflows/requests/process": {
+      "post": {
+        "tags": ["Approval Workflow - Requests"],
+        "summary": "Process an approval (approve or reject)",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": ["executionId", "decision"],
+                "properties": {
+                  "executionId": { "type": "string", "format": "uuid" },
+                  "decision": { "type": "string", "enum": ["Approve", "Reject"] },
+                  "comments": { "type": "string" }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": { "description": "Approval processed successfully" }
+        }
+      }
+    },
+    "/api/approval-workflows/requests/{requestId}": {
+      "get": {
+        "tags": ["Approval Workflow - Requests"],
+        "summary": "Get approval request by ID",
+        "parameters": [
+          {
+            "name": "requestId",
+            "in": "path",
+            "required": true,
+            "schema": { "type": "string", "format": "uuid" }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Approval request details",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "requestId": { "type": "string", "format": "uuid" },
+                    "workflowCode": { "type": "string" },
+                    "entityType": { "type": "string" },
+                    "status": { "type": "string" }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/approval-workflows/requests/entity/{entityType}/{entityId}": {
+      "get": {
+        "tags": ["Approval Workflow - Requests"],
+        "summary": "Get approval request by entity",
+        "parameters": [
+          {
+            "name": "entityType",
+            "in": "path",
+            "required": true,
+            "schema": { "type": "string" }
+          },
+          {
+            "name": "entityId",
+            "in": "path",
+            "required": true,
+            "schema": { "type": "string", "format": "uuid" }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Approval request for the entity",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "requestId": { "type": "string", "format": "uuid" },
+                    "entityType": { "type": "string" },
+                    "status": { "type": "string" }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/approval-workflows/approvals/pending/{approverId}": {
+      "get": {
+        "tags": ["Approval Workflow - Approvals"],
+        "summary": "Get pending approvals for an approver",
+        "parameters": [
+          {
+            "name": "approverId",
+            "in": "path",
+            "required": true,
+            "schema": { "type": "string", "format": "uuid" }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "List of pending approvals",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "properties": {
+                      "executionId": { "type": "string", "format": "uuid" },
+                      "requestId": { "type": "string", "format": "uuid" },
+                      "stageName": { "type": "string" },
+                      "status": { "type": "string" }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/organization-bodies/forums/search": {
+      "post": {
+        "tags": ["Organization Bodies - Forums"],
+        "summary": "Search forums with advanced filtering",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SearchRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Search results",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SearchResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/organization-bodies/forums": {
+      "post": {
+        "tags": ["Organization Bodies - Forums"],
+        "summary": "Create a new forum",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": ["forumCode", "forumName", "adminUserId", "establishedDate"],
+                "properties": {
+                  "forumCode": { "type": "string" },
+                  "forumName": { "type": "string" },
+                  "adminUserId": { "type": "string", "format": "uuid" },
+                  "establishedDate": { "type": "string", "format": "date" }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Forum created successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "forumId": { "type": "string", "format": "uuid" },
+                    "forumCode": { "type": "string" },
+                    "forumName": { "type": "string" }
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "get": {
+        "tags": ["Organization Bodies - Forums"],
+        "summary": "List all forums",
+        "responses": {
+          "200": {
+            "description": "List of forums",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "properties": {
+                      "forumId": { "type": "string", "format": "uuid" },
+                      "forumCode": { "type": "string" },
+                      "forumName": { "type": "string" },
+                      "establishedDate": { "type": "string", "format": "date" }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/organization-bodies/forums/{forumId}": {
+      "get": {
+        "tags": ["Organization Bodies - Forums"],
+        "summary": "Get forum by ID",
+        "parameters": [
+          {
+            "name": "forumId",
+            "in": "path",
+            "required": true,
+            "schema": { "type": "string", "format": "uuid" }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Forum details",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "forumId": { "type": "string", "format": "uuid" },
+                    "forumCode": { "type": "string" },
+                    "forumName": { "type": "string" },
+                    "adminUserId": { "type": "string", "format": "uuid" }
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "patch": {
+        "tags": ["Organization Bodies - Forums"],
+        "summary": "Update forum",
+        "parameters": [
+          {
+            "name": "forumId",
+            "in": "path",
+            "required": true,
+            "schema": { "type": "string", "format": "uuid" }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "forumName": { "type": "string" },
+                  "establishedDate": { "type": "string", "format": "date" }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": { "description": "Forum updated successfully" }
+        }
+      }
+    },
+    "/api/organization-bodies/forums/code/{forumCode}": {
+      "get": {
+        "tags": ["Organization Bodies - Forums"],
+        "summary": "Get forum by code",
+        "parameters": [
+          {
+            "name": "forumCode",
+            "in": "path",
+            "required": true,
+            "schema": { "type": "string" }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Forum details",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "forumId": { "type": "string", "format": "uuid" },
+                    "forumCode": { "type": "string" },
+                    "forumName": { "type": "string" }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/organization-bodies/forums/{forumId}/assign-admin": {
+      "post": {
+        "tags": ["Organization Bodies - Forums"],
+        "summary": "Assign forum admin",
+        "parameters": [
+          {
+            "name": "forumId",
+            "in": "path",
+            "required": true,
+            "schema": { "type": "string", "format": "uuid" }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": ["newAdminUserId"],
+                "properties": {
+                  "newAdminUserId": { "type": "string", "format": "uuid" }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": { "description": "Admin assigned successfully" }
+        }
+      }
+    },
+    "/api/organization-bodies/areas/search": {
+      "post": {
+        "tags": ["Organization Bodies - Areas"],
+        "summary": "Search areas with advanced filtering",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SearchRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Search results",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SearchResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/organization-bodies/areas": {
+      "post": {
+        "tags": ["Organization Bodies - Areas"],
+        "summary": "Create a new area",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": ["forumId", "areaCode", "areaName", "adminUserId", "establishedDate"],
+                "properties": {
+                  "forumId": { "type": "string", "format": "uuid" },
+                  "areaCode": { "type": "string" },
+                  "areaName": { "type": "string" },
+                  "adminUserId": { "type": "string", "format": "uuid" },
+                  "establishedDate": { "type": "string", "format": "date" }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Area created successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "areaId": { "type": "string", "format": "uuid" },
+                    "areaCode": { "type": "string" },
+                    "areaName": { "type": "string" }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/organization-bodies/areas/{areaId}": {
+      "get": {
+        "tags": ["Organization Bodies - Areas"],
+        "summary": "Get area by ID",
+        "parameters": [
+          {
+            "name": "areaId",
+            "in": "path",
+            "required": true,
+            "schema": { "type": "string", "format": "uuid" }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Area details",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "areaId": { "type": "string", "format": "uuid" },
+                    "areaCode": { "type": "string" },
+                    "areaName": { "type": "string" },
+                    "forumId": { "type": "string", "format": "uuid" }
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "patch": {
+        "tags": ["Organization Bodies - Areas"],
+        "summary": "Update area",
+        "parameters": [
+          {
+            "name": "areaId",
+            "in": "path",
+            "required": true,
+            "schema": { "type": "string", "format": "uuid" }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "areaName": { "type": "string" },
+                  "establishedDate": { "type": "string", "format": "date" }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": { "description": "Area updated successfully" }
+        }
+      }
+    },
+    "/api/organization-bodies/areas/{areaId}/assign-admin": {
+      "post": {
+        "tags": ["Organization Bodies - Areas"],
+        "summary": "Assign area admin",
+        "parameters": [
+          {
+            "name": "areaId",
+            "in": "path",
+            "required": true,
+            "schema": { "type": "string", "format": "uuid" }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": ["newAdminUserId"],
+                "properties": {
+                  "newAdminUserId": { "type": "string", "format": "uuid" }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": { "description": "Admin assigned successfully" }
+        }
+      }
+    },
+    "/api/organization-bodies/forums/{forumId}/areas": {
+      "get": {
+        "tags": ["Organization Bodies - Areas"],
+        "summary": "List areas by forum",
+        "parameters": [
+          {
+            "name": "forumId",
+            "in": "path",
+            "required": true,
+            "schema": { "type": "string", "format": "uuid" }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "List of areas in forum",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "properties": {
+                      "areaId": { "type": "string", "format": "uuid" },
+                      "areaCode": { "type": "string" },
+                      "areaName": { "type": "string" }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/organization-bodies/units/search": {
+      "post": {
+        "tags": ["Organization Bodies - Units"],
+        "summary": "Search units with advanced filtering",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SearchRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Search results",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SearchResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/organization-bodies/units": {
+      "post": {
+        "tags": ["Organization Bodies - Units"],
+        "summary": "Create a new unit",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": ["areaId", "unitCode", "unitName", "adminUserId", "establishedDate"],
+                "properties": {
+                  "areaId": { "type": "string", "format": "uuid" },
+                  "unitCode": { "type": "string" },
+                  "unitName": { "type": "string" },
+                  "adminUserId": { "type": "string", "format": "uuid" },
+                  "establishedDate": { "type": "string", "format": "date" }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Unit created successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "unitId": { "type": "string", "format": "uuid" },
+                    "unitCode": { "type": "string" },
+                    "unitName": { "type": "string" }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/organization-bodies/units/{unitId}": {
+      "get": {
+        "tags": ["Organization Bodies - Units"],
+        "summary": "Get unit by ID",
+        "parameters": [
+          {
+            "name": "unitId",
+            "in": "path",
+            "required": true,
+            "schema": { "type": "string", "format": "uuid" }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Unit details",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "unitId": { "type": "string", "format": "uuid" },
+                    "unitCode": { "type": "string" },
+                    "unitName": { "type": "string" },
+                    "areaId": { "type": "string", "format": "uuid" }
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "patch": {
+        "tags": ["Organization Bodies - Units"],
+        "summary": "Update unit",
+        "parameters": [
+          {
+            "name": "unitId",
+            "in": "path",
+            "required": true,
+            "schema": { "type": "string", "format": "uuid" }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "unitName": { "type": "string" },
+                  "establishedDate": { "type": "string", "format": "date" }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": { "description": "Unit updated successfully" }
+        }
+      }
+    },
+    "/api/organization-bodies/units/{unitId}/assign-admin": {
+      "post": {
+        "tags": ["Organization Bodies - Units"],
+        "summary": "Assign unit admin",
+        "parameters": [
+          {
+            "name": "unitId",
+            "in": "path",
+            "required": true,
+            "schema": { "type": "string", "format": "uuid" }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": ["newAdminUserId"],
+                "properties": {
+                  "newAdminUserId": { "type": "string", "format": "uuid" }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": { "description": "Admin assigned successfully" }
+        }
+      }
+    },
+    "/api/organization-bodies/areas/{areaId}/units": {
+      "get": {
+        "tags": ["Organization Bodies - Units"],
+        "summary": "List units by area",
+        "parameters": [
+          {
+            "name": "areaId",
+            "in": "path",
+            "required": true,
+            "schema": { "type": "string", "format": "uuid" }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "List of units in area",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "properties": {
+                      "unitId": { "type": "string", "format": "uuid" },
+                      "unitCode": { "type": "string" },
+                      "unitName": { "type": "string" }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/organization-bodies/forums/{forumId}/units": {
+      "get": {
+        "tags": ["Organization Bodies - Units"],
+        "summary": "List all units by forum",
+        "parameters": [
+          {
+            "name": "forumId",
+            "in": "path",
+            "required": true,
+            "schema": { "type": "string", "format": "uuid" }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "List of units in forum",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "properties": {
+                      "unitId": { "type": "string", "format": "uuid" },
+                      "unitCode": { "type": "string" },
+                      "unitName": { "type": "string" }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/agents/search": {
+      "post": {
+        "tags": ["Agents"],
+        "summary": "Search agents with advanced filtering",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SearchRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Search results",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SearchResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/agents/register": {
+      "post": {
+        "tags": ["Agents"],
+        "summary": "Start agent registration (creates draft)",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": ["unitId", "areaId", "forumId", "agentCode", "firstName", "lastName", "dateOfBirth", "gender", "contactNumber", "email", "joinedDate"],
+                "properties": {
+                  "unitId": { "type": "string", "format": "uuid" },
+                  "areaId": { "type": "string", "format": "uuid" },
+                  "forumId": { "type": "string", "format": "uuid" },
+                  "agentCode": { "type": "string" },
+                  "firstName": { "type": "string" },
+                  "middleName": { "type": "string" },
+                  "lastName": { "type": "string" },
+                  "dateOfBirth": { "type": "string", "format": "date" },
+                  "gender": { "type": "string", "enum": ["Male", "Female", "Other"] },
+                  "contactNumber": { "type": "string" },
+                  "alternateContactNumber": { "type": "string" },
+                  "email": { "type": "string", "format": "email" },
+                  "addressLine1": { "type": "string" },
+                  "addressLine2": { "type": "string" },
+                  "city": { "type": "string" },
+                  "state": { "type": "string" },
+                  "postalCode": { "type": "string" },
+                  "country": { "type": "string" },
+                  "joinedDate": { "type": "string", "format": "date" }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Agent registration started",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "agentId": { "type": "string", "format": "uuid" },
+                    "agentCode": { "type": "string" },
+                    "registrationStatus": { "type": "string" }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/agents/{agentId}": {
+      "get": {
+        "tags": ["Agents"],
+        "summary": "Get agent by ID",
+        "parameters": [
+          {
+            "name": "agentId",
+            "in": "path",
+            "required": true,
+            "schema": { "type": "string", "format": "uuid" }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Agent details",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "agentId": { "type": "string", "format": "uuid" },
+                    "agentCode": { "type": "string" },
+                    "firstName": { "type": "string" },
+                    "lastName": { "type": "string" },
+                    "registrationStatus": { "type": "string" },
+                    "agentStatus": { "type": "string" }
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "patch": {
+        "tags": ["Agents"],
+        "summary": "Update agent details (for approved agents)",
+        "parameters": [
+          {
+            "name": "agentId",
+            "in": "path",
+            "required": true,
+            "schema": { "type": "string", "format": "uuid" }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "firstName": { "type": "string" },
+                  "middleName": { "type": "string" },
+                  "lastName": { "type": "string" },
+                  "contactNumber": { "type": "string" },
+                  "alternateContactNumber": { "type": "string" },
+                  "addressLine1": { "type": "string" },
+                  "addressLine2": { "type": "string" },
+                  "city": { "type": "string" },
+                  "state": { "type": "string" },
+                  "postalCode": { "type": "string" },
+                  "country": { "type": "string" }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": { "description": "Agent updated successfully" }
+        }
+      }
+    },
+    "/api/agents/{agentId}/draft": {
+      "patch": {
+        "tags": ["Agents"],
+        "summary": "Update agent draft (before submission)",
+        "parameters": [
+          {
+            "name": "agentId",
+            "in": "path",
+            "required": true,
+            "schema": { "type": "string", "format": "uuid" }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "firstName": { "type": "string" },
+                  "middleName": { "type": "string" },
+                  "lastName": { "type": "string" },
+                  "dateOfBirth": { "type": "string", "format": "date" },
+                  "gender": { "type": "string", "enum": ["Male", "Female", "Other"] },
+                  "contactNumber": { "type": "string" },
+                  "alternateContactNumber": { "type": "string" },
+                  "email": { "type": "string", "format": "email" },
+                  "addressLine1": { "type": "string" },
+                  "addressLine2": { "type": "string" },
+                  "city": { "type": "string" },
+                  "state": { "type": "string" },
+                  "postalCode": { "type": "string" },
+                  "country": { "type": "string" }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": { "description": "Draft updated successfully" }
+        }
+      }
+    },
+    "/api/agents/{agentId}/submit": {
+      "post": {
+        "tags": ["Agents"],
+        "summary": "Submit agent registration for approval",
+        "parameters": [
+          {
+            "name": "agentId",
+            "in": "path",
+            "required": true,
+            "schema": { "type": "string", "format": "uuid" }
+          }
+        ],
+        "responses": {
+          "200": { "description": "Registration submitted for approval" }
+        }
+      }
+    },
+    "/api/agents/{agentId}/terminate": {
+      "post": {
+        "tags": ["Agents"],
+        "summary": "Terminate an agent",
+        "parameters": [
+          {
+            "name": "agentId",
+            "in": "path",
+            "required": true,
+            "schema": { "type": "string", "format": "uuid" }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": ["terminationReason"],
+                "properties": {
+                  "terminationReason": { "type": "string" }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": { "description": "Agent terminated successfully" }
+        }
+      }
+    },
+    "/api/agents/unit/{unitId}": {
+      "get": {
+        "tags": ["Agents"],
+        "summary": "List agents by unit",
+        "parameters": [
+          {
+            "name": "unitId",
+            "in": "path",
+            "required": true,
+            "schema": { "type": "string", "format": "uuid" }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "List of agents in unit",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "properties": {
+                      "agentId": { "type": "string", "format": "uuid" },
+                      "agentCode": { "type": "string" },
+                      "firstName": { "type": "string" },
+                      "lastName": { "type": "string" },
+                      "agentStatus": { "type": "string" }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/agents/area/{areaId}": {
+      "get": {
+        "tags": ["Agents"],
+        "summary": "List agents by area",
+        "parameters": [
+          {
+            "name": "areaId",
+            "in": "path",
+            "required": true,
+            "schema": { "type": "string", "format": "uuid" }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "List of agents in area",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "properties": {
+                      "agentId": { "type": "string", "format": "uuid" },
+                      "agentCode": { "type": "string" },
+                      "firstName": { "type": "string" },
+                      "lastName": { "type": "string" }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/agents/forum/{forumId}": {
+      "get": {
+        "tags": ["Agents"],
+        "summary": "List agents by forum",
+        "parameters": [
+          {
+            "name": "forumId",
+            "in": "path",
+            "required": true,
+            "schema": { "type": "string", "format": "uuid" }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "List of agents in forum",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "properties": {
+                      "agentId": { "type": "string", "format": "uuid" },
+                      "agentCode": { "type": "string" },
+                      "firstName": { "type": "string" },
+                      "lastName": { "type": "string" }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/members/search": {
+      "post": {
+        "tags": ["Members - Queries"],
+        "summary": "Search members with advanced filtering",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SearchRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Search results",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SearchResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/members/register": {
+      "post": {
+        "tags": ["Members - Registration"],
+        "summary": "Start member registration (Step 1: Personal Details)",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": ["firstName", "lastName", "dateOfBirth", "gender", "contactNumber", "addressLine1", "city", "state", "postalCode", "country", "tierId", "unitId", "agentId"],
+                "properties": {
+                  "firstName": { "type": "string" },
+                  "middleName": { "type": "string" },
+                  "lastName": { "type": "string" },
+                  "dateOfBirth": { "type": "string", "format": "date" },
+                  "gender": { "type": "string", "enum": ["Male", "Female", "Other"] },
+                  "contactNumber": { "type": "string" },
+                  "alternateContactNumber": { "type": "string" },
+                  "email": { "type": "string", "format": "email" },
+                  "addressLine1": { "type": "string" },
+                  "addressLine2": { "type": "string" },
+                  "city": { "type": "string" },
+                  "state": { "type": "string" },
+                  "postalCode": { "type": "string" },
+                  "country": { "type": "string" },
+                  "tierId": { "type": "string", "format": "uuid" },
+                  "unitId": { "type": "string", "format": "uuid" },
+                  "agentId": { "type": "string", "format": "uuid" }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Member registration started",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "memberId": { "type": "string", "format": "uuid" },
+                    "memberCode": { "type": "string" },
+                    "currentStep": { "type": "string" }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/members/{memberId}": {
+      "get": {
+        "tags": ["Members - Queries"],
+        "summary": "Get member details",
+        "parameters": [
+          {
+            "name": "memberId",
+            "in": "path",
+            "required": true,
+            "schema": { "type": "string", "format": "uuid" }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Member details",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "memberId": { "type": "string", "format": "uuid" },
+                    "memberCode": { "type": "string" },
+                    "firstName": { "type": "string" },
+                    "lastName": { "type": "string" },
+                    "registrationStatus": { "type": "string" },
+                    "memberStatus": { "type": "string" }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/members": {
+      "get": {
+        "tags": ["Members - Queries"],
+        "summary": "List members with filters",
+        "parameters": [
+          { "name": "registrationStatus", "in": "query", "schema": { "type": "string", "enum": ["Draft", "PendingApproval", "Approved", "Rejected"] } },
+          { "name": "memberStatus", "in": "query", "schema": { "type": "string", "enum": ["Active", "Frozen", "Suspended", "Closed", "Deceased"] } },
+          { "name": "unitId", "in": "query", "schema": { "type": "string", "format": "uuid" } },
+          { "name": "agentId", "in": "query", "schema": { "type": "string", "format": "uuid" } },
+          { "name": "tierId", "in": "query", "schema": { "type": "string", "format": "uuid" } },
+          { "name": "searchQuery", "in": "query", "schema": { "type": "string" } },
+          { "name": "page", "in": "query", "schema": { "type": "integer", "default": 1 } },
+          { "name": "limit", "in": "query", "schema": { "type": "integer", "default": 20 } }
+        ],
+        "responses": {
+          "200": {
+            "description": "List of members",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "data": { "type": "array", "items": { "type": "object" } },
+                    "total": { "type": "integer" },
+                    "page": { "type": "integer" },
+                    "limit": { "type": "integer" }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/members/{memberId}/draft/personal-details": {
+      "patch": {
+        "tags": ["Members - Registration"],
+        "summary": "Save personal details as draft",
+        "parameters": [
+          {
+            "name": "memberId",
+            "in": "path",
+            "required": true,
+            "schema": { "type": "string", "format": "uuid" }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "firstName": { "type": "string" },
+                  "middleName": { "type": "string" },
+                  "lastName": { "type": "string" },
+                  "dateOfBirth": { "type": "string", "format": "date" },
+                  "gender": { "type": "string", "enum": ["Male", "Female", "Other"] },
+                  "contactNumber": { "type": "string" },
+                  "email": { "type": "string", "format": "email" },
+                  "addressLine1": { "type": "string" },
+                  "city": { "type": "string" },
+                  "state": { "type": "string" }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": { "description": "Draft saved successfully" }
+        }
+      }
+    },
+    "/api/members/{memberId}/complete/personal-details": {
+      "post": {
+        "tags": ["Members - Registration"],
+        "summary": "Complete personal details step",
+        "parameters": [
+          {
+            "name": "memberId",
+            "in": "path",
+            "required": true,
+            "schema": { "type": "string", "format": "uuid" }
+          }
+        ],
+        "responses": {
+          "200": { "description": "Personal details step completed" }
+        }
+      }
+    },
+    "/api/members/{memberId}/nominees": {
+      "post": {
+        "tags": ["Members - Nominees"],
+        "summary": "Add nominee (Step 2)",
+        "parameters": [
+          {
+            "name": "memberId",
+            "in": "path",
+            "required": true,
+            "schema": { "type": "string", "format": "uuid" }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": ["name", "relationType", "dateOfBirth", "contactNumber", "addressLine1", "city", "state", "postalCode", "country", "idProofType", "idProofNumber"],
+                "properties": {
+                  "name": { "type": "string" },
+                  "relationType": { "type": "string", "enum": ["Father", "Mother", "Spouse", "Son", "Daughter", "Brother", "Sister", "Other"] },
+                  "dateOfBirth": { "type": "string", "format": "date" },
+                  "contactNumber": { "type": "string" },
+                  "addressLine1": { "type": "string" },
+                  "city": { "type": "string" },
+                  "state": { "type": "string" },
+                  "postalCode": { "type": "string" },
+                  "country": { "type": "string" },
+                  "idProofType": { "type": "string", "enum": ["NationalID", "Passport", "DrivingLicense", "VoterID", "Other"] },
+                  "idProofNumber": { "type": "string" }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Nominee added",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "nomineeId": { "type": "string", "format": "uuid" }
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "get": {
+        "tags": ["Members - Nominees"],
+        "summary": "Get all nominees for a member",
+        "parameters": [
+          {
+            "name": "memberId",
+            "in": "path",
+            "required": true,
+            "schema": { "type": "string", "format": "uuid" }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "List of nominees",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "properties": {
+                      "nomineeId": { "type": "string", "format": "uuid" },
+                      "name": { "type": "string" },
+                      "relationType": { "type": "string" }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/members/{memberId}/nominees/{nomineeId}": {
+      "patch": {
+        "tags": ["Members - Nominees"],
+        "summary": "Update nominee",
+        "parameters": [
+          {
+            "name": "memberId",
+            "in": "path",
+            "required": true,
+            "schema": { "type": "string", "format": "uuid" }
+          },
+          {
+            "name": "nomineeId",
+            "in": "path",
+            "required": true,
+            "schema": { "type": "string", "format": "uuid" }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "name": { "type": "string" },
+                  "contactNumber": { "type": "string" },
+                  "addressLine1": { "type": "string" }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": { "description": "Nominee updated successfully" }
+        }
+      },
+      "delete": {
+        "tags": ["Members - Nominees"],
+        "summary": "Remove nominee",
+        "parameters": [
+          {
+            "name": "memberId",
+            "in": "path",
+            "required": true,
+            "schema": { "type": "string", "format": "uuid" }
+          },
+          {
+            "name": "nomineeId",
+            "in": "path",
+            "required": true,
+            "schema": { "type": "string", "format": "uuid" }
+          }
+        ],
+        "responses": {
+          "200": { "description": "Nominee removed successfully" }
+        }
+      }
+    },
+    "/api/members/{memberId}/complete/nominees": {
+      "post": {
+        "tags": ["Members - Nominees"],
+        "summary": "Complete nominees step",
+        "parameters": [
+          {
+            "name": "memberId",
+            "in": "path",
+            "required": true,
+            "schema": { "type": "string", "format": "uuid" }
+          }
+        ],
+        "responses": {
+          "200": { "description": "Nominees step completed" }
+        }
+      }
+    },
+    "/api/members/{memberId}/documents": {
+      "post": {
+        "tags": ["Members - Documents"],
+        "summary": "Upload document (Step 3)",
+        "parameters": [
+          {
+            "name": "memberId",
+            "in": "path",
+            "required": true,
+            "schema": { "type": "string", "format": "uuid" }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": ["documentType", "documentCategory", "documentName", "fileUrl", "fileSize", "mimeType"],
+                "properties": {
+                  "nomineeId": { "type": "string", "format": "uuid" },
+                  "documentType": { "type": "string", "enum": ["NationalID", "Passport", "MemberPhoto", "Other"] },
+                  "documentCategory": { "type": "string", "enum": ["MemberIdentity", "MemberAddress", "MemberPhoto", "NomineeProof", "Other"] },
+                  "documentName": { "type": "string" },
+                  "fileUrl": { "type": "string", "format": "uri" },
+                  "fileSize": { "type": "integer" },
+                  "mimeType": { "type": "string", "enum": ["application/pdf", "image/jpeg", "image/png"] }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Document uploaded",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "documentId": { "type": "string", "format": "uuid" }
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "get": {
+        "tags": ["Members - Documents"],
+        "summary": "Get all documents for a member",
+        "parameters": [
+          {
+            "name": "memberId",
+            "in": "path",
+            "required": true,
+            "schema": { "type": "string", "format": "uuid" }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "List of documents",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "properties": {
+                      "documentId": { "type": "string", "format": "uuid" },
+                      "documentType": { "type": "string" },
+                      "documentName": { "type": "string" }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/members/{memberId}/documents/{documentId}": {
+      "delete": {
+        "tags": ["Members - Documents"],
+        "summary": "Remove document",
+        "parameters": [
+          {
+            "name": "memberId",
+            "in": "path",
+            "required": true,
+            "schema": { "type": "string", "format": "uuid" }
+          },
+          {
+            "name": "documentId",
+            "in": "path",
+            "required": true,
+            "schema": { "type": "string", "format": "uuid" }
+          }
+        ],
+        "responses": {
+          "200": { "description": "Document removed successfully" }
+        }
+      }
+    },
+    "/api/members/{memberId}/payment": {
+      "post": {
+        "tags": ["Members - Payment"],
+        "summary": "Record registration payment (Step 3)",
+        "parameters": [
+          {
+            "name": "memberId",
+            "in": "path",
+            "required": true,
+            "schema": { "type": "string", "format": "uuid" }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": ["registrationFee", "advanceDeposit", "collectedBy", "collectionDate", "collectionMode"],
+                "properties": {
+                  "registrationFee": { "type": "number" },
+                  "advanceDeposit": { "type": "number" },
+                  "collectedBy": { "type": "string", "format": "uuid" },
+                  "collectionDate": { "type": "string", "format": "date" },
+                  "collectionMode": { "type": "string", "enum": ["Cash", "BankTransfer", "Cheque", "Online"] },
+                  "referenceNumber": { "type": "string" }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": { "description": "Payment recorded successfully" }
+        }
+      },
+      "get": {
+        "tags": ["Members - Payment"],
+        "summary": "Get payment details",
+        "parameters": [
+          {
+            "name": "memberId",
+            "in": "path",
+            "required": true,
+            "schema": { "type": "string", "format": "uuid" }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Payment details",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "registrationFee": { "type": "number" },
+                    "advanceDeposit": { "type": "number" },
+                    "collectionMode": { "type": "string" }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/members/{memberId}/submit": {
+      "post": {
+        "tags": ["Members - Registration"],
+        "summary": "Submit registration for approval",
+        "parameters": [
+          {
+            "name": "memberId",
+            "in": "path",
+            "required": true,
+            "schema": { "type": "string", "format": "uuid" }
+          }
+        ],
+        "responses": {
+          "200": { "description": "Registration submitted for approval" }
+        }
+      }
+    },
+    "/api/members/{memberId}/suspend": {
+      "post": {
+        "tags": ["Members - Management"],
+        "summary": "Suspend a member",
+        "parameters": [
+          {
+            "name": "memberId",
+            "in": "path",
+            "required": true,
+            "schema": { "type": "string", "format": "uuid" }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": ["reason", "suspendedBy"],
+                "properties": {
+                  "reason": { "type": "string" },
+                  "suspendedBy": { "type": "string", "format": "uuid" }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": { "description": "Member suspended successfully" }
+        }
+      }
+    },
+    "/api/members/{memberId}/reactivate": {
+      "post": {
+        "tags": ["Members - Management"],
+        "summary": "Reactivate a suspended member",
+        "parameters": [
+          {
+            "name": "memberId",
+            "in": "path",
+            "required": true,
+            "schema": { "type": "string", "format": "uuid" }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": ["reactivatedBy"],
+                "properties": {
+                  "reactivatedBy": { "type": "string", "format": "uuid" }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": { "description": "Member reactivated successfully" }
+        }
+      }
+    },
+    "/api/members/{memberId}/close": {
+      "post": {
+        "tags": ["Members - Management"],
+        "summary": "Close member account",
+        "parameters": [
+          {
+            "name": "memberId",
+            "in": "path",
+            "required": true,
+            "schema": { "type": "string", "format": "uuid" }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": ["closureReason"],
+                "properties": {
+                  "closureReason": { "type": "string" }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": { "description": "Member account closed successfully" }
+        }
+      }
     }
   },
   "components": {
+    "schemas": {
+      "SearchRequest": {
+        "type": "object",
+        "description": "Advanced search request with filters, sorting, and pagination. Supports multiple filter operators and eager loading of relations.",
+        "properties": {
+          "searchTerm": {
+            "type": "string",
+            "description": "Global search term to search across specified searchFields"
+          },
+          "searchFields": {
+            "type": "array",
+            "items": { "type": "string" },
+            "description": "Fields to search in when searchTerm is provided (e.g., ['firstName', 'lastName', 'email'])"
+          },
+          "filters": {
+            "type": "array",
+            "description": "Array of filter conditions to apply",
+            "items": {
+              "type": "object",
+              "required": ["field", "operator", "value"],
+              "properties": {
+                "field": { "type": "string", "description": "Field name to filter on" },
+                "operator": {
+                  "type": "string",
+                  "enum": ["equals", "notEquals", "contains", "in", "notIn", "gte", "lte", "gt", "lt", "between", "isNull", "isNotNull"],
+                  "description": "Filter operator"
+                },
+                "value": {
+                  "oneOf": [
+                    { "type": "string" },
+                    { "type": "number" },
+                    { "type": "boolean" },
+                    { "type": "array", "items": {} },
+                    { "type": "object", "properties": { "from": {}, "to": {} } }
+                  ],
+                  "description": "Filter value (type depends on operator)"
+                },
+                "negate": { "type": "boolean", "description": "Negate the filter condition" }
+              }
+            }
+          },
+          "sortBy": {
+            "oneOf": [
+              { "type": "string" },
+              { "type": "array", "items": { "type": "string" } }
+            ],
+            "description": "Field(s) to sort by"
+          },
+          "sortOrder": {
+            "oneOf": [
+              { "type": "string", "enum": ["asc", "desc"] },
+              { "type": "object", "additionalProperties": { "type": "string", "enum": ["asc", "desc"] } }
+            ],
+            "description": "Sort order - single or per-field"
+          },
+          "page": { "type": "integer", "minimum": 1, "description": "Page number (starts at 1)" },
+          "pageSize": { "type": "integer", "minimum": 1, "maximum": 100, "description": "Items per page (max 100)" },
+          "eagerLoad": {
+            "type": "array",
+            "items": { "type": "string" },
+            "description": "Relations to eager load (e.g., ['unit', 'agent'])"
+          }
+        }
+      },
+      "SearchResponse": {
+        "type": "object",
+        "description": "Paginated search result",
+        "properties": {
+          "items": { "type": "array", "items": {}, "description": "Array of result items" },
+          "total": { "type": "integer", "description": "Total count of matching items" },
+          "page": { "type": "integer", "description": "Current page number" },
+          "pageSize": { "type": "integer", "description": "Items per page" },
+          "totalPages": { "type": "integer", "description": "Total number of pages" }
+        }
+      }
+    },
     "securitySchemes": {
       "BearerAuth": {
         "type": "http",

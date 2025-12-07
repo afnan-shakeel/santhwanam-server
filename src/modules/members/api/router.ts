@@ -16,9 +16,14 @@ import {
   reactivateMemberSchema,
   closeMemberAccountSchema,
 } from "./validators";
+import { searchValidationSchema } from "@/shared/validators/searchValidator";
 
 export function createMembersRouter(controller: MembersController): Router {
   const router = Router();
+
+  // ===== SEARCH =====
+  
+  router.post("/search", validateBody(searchValidationSchema), controller.searchMembers);
 
   // ===== STEP 1: PERSONAL DETAILS =====
 
