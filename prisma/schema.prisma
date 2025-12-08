@@ -709,3 +709,171 @@ model MembershipTier {
   @@index([isActive])
   @@index([isDefault])
 }
+
+// ===================================
+// Domain: General Ledger (GL)
+// See `docs/domain/6.gl.md`
+// ===================================
+
+enum AccountType {
+  Asset
+  Liability
+  Revenue
+  Expense
+  Equity
+}
+
+enum NormalBalance {
+  Debit
+  Credit
+}
+
+enum EntryStatus {
+  Draft
+  Posted
+  Reversed
+}
+
+enum PeriodStatus {
+  Open
+  Closed
+}
+
+// Chart of Accounts
+model ChartOfAccount {
+  accountId                String                    @id @default(uuid())
+  accountCode              String                    @unique
+  accountName              String
+  accountType              AccountType
+  accountCategory          String?
+
+  // Hierarchy
+  parentAccount            ChartOfAccount?           @relation("AccountHierarchy", fields: [parentAccountId], references: [accountId])
+  parentAccountId          String?
+  childAccounts            ChartOfAccount[]          @relation("AccountHierarchy")
+  accountLevel             Int                       @default(1)
+
+  // Balance tracking
+  normalBalance            NormalBalance
+  currentBalance           Decimal                   @db.Decimal(15, 2) @default(0)
+
+  // Status
+  isActive                 Boolean                   @default(true)
+  isSystemAccount          Boolean                   @default(false)
+
+  // Timestamps
+  createdAt                DateTime                  @default(now())
+  createdBy                String
+  updatedAt                DateTime?
+  updatedBy                String?
+
+  // Relations
+  journalEntryLines        JournalEntryLine[]
+
+  @@index([accountCode])
+  @@index([accountType])
+  @@index([isActive])
+  @@index([parentAccountId])
+  @@index([isSystemAccount])
+}
+
+// Journal Entry
+model JournalEntry {
+  entryId                  String                    @id @default(uuid())
+  entryNumber              String                    @unique
+
+  // Entry details
+  entryDate                DateTime
+  postingDate              DateTime?
+  description              String
+  reference                String?
+
+  // Source tracking
+  sourceModule             String
+  sourceEntityId           String?
+  sourceTransactionType    String
+
+  // Status
+  entryStatus              EntryStatus               @default(Draft)
+
+  // Reversal tracking
+  reversedEntry            JournalEntry?             @relation("EntryReversal", fields: [reversedEntryId], references: [entryId])
+  reversedEntryId          String?
+  reversedByEntry          JournalEntry[]            @relation("EntryReversal")
+  reversalReason           String?
+  reversedAt               DateTime?
+  reversedBy               String?
+
+  // Validation
+  totalDebit               Decimal                   @db.Decimal(15, 2) @default(0)
+  totalCredit              Decimal                   @db.Decimal(15, 2) @default(0)
+  isBalanced               Boolean                   @default(false)
+
+  // Timestamps
+  createdAt                DateTime                  @default(now())
+  createdBy                String
+  postedAt                 DateTime?
+  postedBy                 String?
+  updatedAt                DateTime?
+
+  // Relations
+  lines                    JournalEntryLine[]
+
+  @@index([entryNumber])
+  @@index([entryDate])
+  @@index([entryStatus])
+  @@index([sourceModule, sourceEntityId])
+  @@index([reversedEntryId])
+  @@index([isBalanced])
+}
+
+// Journal Entry Line
+model JournalEntryLine {
+  lineId                   String                    @id @default(uuid())
+  entry                    JournalEntry              @relation(fields: [entryId], references: [entryId], onDelete: Cascade)
+  entryId                  String
+
+  lineNumber               Int
+
+  // Account reference
+  account                  ChartOfAccount            @relation(fields: [accountId], references: [accountId])
+  accountId                String
+  accountCode              String
+  accountName              String
+
+  // Amounts
+  debitAmount              Decimal                   @db.Decimal(15, 2) @default(0)
+  creditAmount             Decimal                   @db.Decimal(15, 2) @default(0)
+
+  description              String
+
+  // Timestamps
+  createdAt                DateTime                  @default(now())
+
+  @@index([entryId])
+  @@index([accountId])
+  @@index([entryId, lineNumber])
+}
+
+// Fiscal Period
+model FiscalPeriod {
+  periodId                 String                    @id @default(uuid())
+  fiscalYear               Int
+  periodNumber             Int
+  periodName               String
+
+  startDate                DateTime
+  endDate                  DateTime
+
+  status                   PeriodStatus              @default(Open)
+
+  closedAt                 DateTime?
+  closedBy                 String?
+
+  createdAt                DateTime                  @default(now())
+
+  @@unique([fiscalYear, periodNumber])
+  @@index([fiscalYear])
+  @@index([status])
+  @@index([startDate, endDate])
+}

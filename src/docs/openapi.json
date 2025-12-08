@@ -2389,6 +2389,950 @@
           "200": { "description": "Member account closed successfully" }
         }
       }
+    },
+    "/api/gl/accounts": {
+      "post": {
+        "tags": ["GL - Chart of Accounts"],
+        "summary": "Create a new chart of account",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": ["accountCode", "accountName", "accountType", "normalBalance"],
+                "properties": {
+                  "accountCode": { "type": "string", "maxLength": 20 },
+                  "accountName": { "type": "string", "maxLength": 200 },
+                  "accountType": { "type": "string", "enum": ["Asset", "Liability", "Revenue", "Expense", "Equity"] },
+                  "accountCategory": { "type": "string", "maxLength": 100 },
+                  "parentAccountId": { "type": "string", "format": "uuid" },
+                  "normalBalance": { "type": "string", "enum": ["Debit", "Credit"] },
+                  "isSystemAccount": { "type": "boolean" }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Account created successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "accountId": { "type": "string", "format": "uuid" },
+                    "accountCode": { "type": "string" },
+                    "accountName": { "type": "string" },
+                    "accountType": { "type": "string" },
+                    "currentBalance": { "type": "number" }
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "get": {
+        "tags": ["GL - Chart of Accounts"],
+        "summary": "Get all chart of accounts",
+        "responses": {
+          "200": {
+            "description": "List of all accounts",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "properties": {
+                      "accountId": { "type": "string", "format": "uuid" },
+                      "accountCode": { "type": "string" },
+                      "accountName": { "type": "string" },
+                      "accountType": { "type": "string" },
+                      "currentBalance": { "type": "number" },
+                      "isActive": { "type": "boolean" }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/gl/accounts/search": {
+      "post": {
+        "tags": ["GL - Chart of Accounts"],
+        "summary": "Search chart of accounts",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SearchRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Search results",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SearchResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/gl/accounts/{accountId}": {
+      "get": {
+        "tags": ["GL - Chart of Accounts"],
+        "summary": "Get account by ID",
+        "parameters": [
+          {
+            "name": "accountId",
+            "in": "path",
+            "required": true,
+            "schema": { "type": "string", "format": "uuid" }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Account details",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "accountId": { "type": "string", "format": "uuid" },
+                    "accountCode": { "type": "string" },
+                    "accountName": { "type": "string" },
+                    "accountType": { "type": "string" },
+                    "currentBalance": { "type": "number" },
+                    "normalBalance": { "type": "string" },
+                    "isActive": { "type": "boolean" },
+                    "isSystemAccount": { "type": "boolean" }
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "patch": {
+        "tags": ["GL - Chart of Accounts"],
+        "summary": "Update account",
+        "parameters": [
+          {
+            "name": "accountId",
+            "in": "path",
+            "required": true,
+            "schema": { "type": "string", "format": "uuid" }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "accountName": { "type": "string", "maxLength": 200 },
+                  "accountCategory": { "type": "string", "maxLength": 100 }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": { "description": "Account updated successfully" }
+        }
+      },
+      "delete": {
+        "tags": ["GL - Chart of Accounts"],
+        "summary": "Deactivate account",
+        "parameters": [
+          {
+            "name": "accountId",
+            "in": "path",
+            "required": true,
+            "schema": { "type": "string", "format": "uuid" }
+          }
+        ],
+        "responses": {
+          "200": { "description": "Account deactivated successfully" }
+        }
+      }
+    },
+    "/api/gl/accounts/code/{accountCode}": {
+      "get": {
+        "tags": ["GL - Chart of Accounts"],
+        "summary": "Get account by code",
+        "parameters": [
+          {
+            "name": "accountCode",
+            "in": "path",
+            "required": true,
+            "schema": { "type": "string" }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Account details",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "accountId": { "type": "string", "format": "uuid" },
+                    "accountCode": { "type": "string" },
+                    "accountName": { "type": "string" },
+                    "accountType": { "type": "string" },
+                    "currentBalance": { "type": "number" }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/gl/accounts/type/{accountType}": {
+      "get": {
+        "tags": ["GL - Chart of Accounts"],
+        "summary": "Get accounts by type",
+        "parameters": [
+          {
+            "name": "accountType",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "enum": ["Asset", "Liability", "Revenue", "Expense", "Equity"]
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "List of accounts",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "properties": {
+                      "accountId": { "type": "string", "format": "uuid" },
+                      "accountCode": { "type": "string" },
+                      "accountName": { "type": "string" },
+                      "currentBalance": { "type": "number" }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/gl/accounts/active/list": {
+      "get": {
+        "tags": ["GL - Chart of Accounts"],
+        "summary": "Get all active accounts",
+        "responses": {
+          "200": {
+            "description": "List of active accounts",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "properties": {
+                      "accountId": { "type": "string", "format": "uuid" },
+                      "accountCode": { "type": "string" },
+                      "accountName": { "type": "string" },
+                      "accountType": { "type": "string" },
+                      "currentBalance": { "type": "number" }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/gl/entries": {
+      "post": {
+        "tags": ["GL - Journal Entries"],
+        "summary": "Create a new journal entry",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": ["entryDate", "description", "sourceModule", "sourceTransactionType", "lines"],
+                "properties": {
+                  "entryDate": { "type": "string", "format": "date" },
+                  "description": { "type": "string", "maxLength": 500 },
+                  "reference": { "type": "string", "maxLength": 100 },
+                  "sourceModule": { "type": "string", "maxLength": 50 },
+                  "sourceEntityId": { "type": "string", "format": "uuid" },
+                  "sourceTransactionType": { "type": "string", "maxLength": 50 },
+                  "autoPost": { "type": "boolean", "description": "Automatically post the entry after creation" },
+                  "lines": {
+                    "type": "array",
+                    "minItems": 2,
+                    "items": {
+                      "type": "object",
+                      "required": ["accountCode", "description"],
+                      "properties": {
+                        "accountCode": { "type": "string" },
+                        "debitAmount": { "type": "number", "minimum": 0 },
+                        "creditAmount": { "type": "number", "minimum": 0 },
+                        "description": { "type": "string", "maxLength": 500 }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Journal entry created successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "entry": {
+                      "type": "object",
+                      "properties": {
+                        "entryId": { "type": "string", "format": "uuid" },
+                        "entryNumber": { "type": "string" },
+                        "entryStatus": { "type": "string" },
+                        "totalDebit": { "type": "number" },
+                        "totalCredit": { "type": "number" },
+                        "isBalanced": { "type": "boolean" }
+                      }
+                    },
+                    "lines": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "lineId": { "type": "string", "format": "uuid" },
+                          "accountCode": { "type": "string" },
+                          "accountName": { "type": "string" },
+                          "debitAmount": { "type": "number" },
+                          "creditAmount": { "type": "number" }
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "get": {
+        "tags": ["GL - Journal Entries"],
+        "summary": "Get journal entries by date range",
+        "parameters": [
+          {
+            "name": "startDate",
+            "in": "query",
+            "required": true,
+            "schema": { "type": "string", "format": "date" }
+          },
+          {
+            "name": "endDate",
+            "in": "query",
+            "required": true,
+            "schema": { "type": "string", "format": "date" }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "List of journal entries",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "properties": {
+                      "entryId": { "type": "string", "format": "uuid" },
+                      "entryNumber": { "type": "string" },
+                      "entryDate": { "type": "string", "format": "date" },
+                      "description": { "type": "string" },
+                      "entryStatus": { "type": "string" },
+                      "totalDebit": { "type": "number" },
+                      "totalCredit": { "type": "number" }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/gl/entries/search": {
+      "post": {
+        "tags": ["GL - Journal Entries"],
+        "summary": "Search journal entries",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SearchRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Search results",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SearchResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/gl/entries/{entryId}": {
+      "get": {
+        "tags": ["GL - Journal Entries"],
+        "summary": "Get journal entry by ID with lines",
+        "parameters": [
+          {
+            "name": "entryId",
+            "in": "path",
+            "required": true,
+            "schema": { "type": "string", "format": "uuid" }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Journal entry details",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "entry": {
+                      "type": "object",
+                      "properties": {
+                        "entryId": { "type": "string", "format": "uuid" },
+                        "entryNumber": { "type": "string" },
+                        "entryDate": { "type": "string", "format": "date" },
+                        "description": { "type": "string" },
+                        "entryStatus": { "type": "string" },
+                        "totalDebit": { "type": "number" },
+                        "totalCredit": { "type": "number" },
+                        "isBalanced": { "type": "boolean" }
+                      }
+                    },
+                    "lines": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "lineId": { "type": "string", "format": "uuid" },
+                          "lineNumber": { "type": "integer" },
+                          "accountCode": { "type": "string" },
+                          "accountName": { "type": "string" },
+                          "debitAmount": { "type": "number" },
+                          "creditAmount": { "type": "number" },
+                          "description": { "type": "string" }
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/gl/entries/{entryId}/post": {
+      "post": {
+        "tags": ["GL - Journal Entries"],
+        "summary": "Post a draft journal entry",
+        "parameters": [
+          {
+            "name": "entryId",
+            "in": "path",
+            "required": true,
+            "schema": { "type": "string", "format": "uuid" }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Entry posted successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "entryId": { "type": "string", "format": "uuid" },
+                    "entryNumber": { "type": "string" },
+                    "entryStatus": { "type": "string" },
+                    "postedAt": { "type": "string", "format": "date-time" },
+                    "postedBy": { "type": "string", "format": "uuid" }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/gl/entries/{entryId}/reverse": {
+      "post": {
+        "tags": ["GL - Journal Entries"],
+        "summary": "Reverse a posted journal entry",
+        "parameters": [
+          {
+            "name": "entryId",
+            "in": "path",
+            "required": true,
+            "schema": { "type": "string", "format": "uuid" }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": ["reason"],
+                "properties": {
+                  "reason": { "type": "string", "maxLength": 500 }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Entry reversed successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "original": {
+                      "type": "object",
+                      "properties": {
+                        "entryId": { "type": "string", "format": "uuid" },
+                        "entryNumber": { "type": "string" },
+                        "entryStatus": { "type": "string" },
+                        "reversedAt": { "type": "string", "format": "date-time" }
+                      }
+                    },
+                    "reversal": {
+                      "type": "object",
+                      "properties": {
+                        "entryId": { "type": "string", "format": "uuid" },
+                        "entryNumber": { "type": "string" },
+                        "description": { "type": "string" }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/gl/periods": {
+      "post": {
+        "tags": ["GL - Fiscal Periods"],
+        "summary": "Create a new fiscal period",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": ["fiscalYear", "periodNumber", "periodName", "startDate", "endDate"],
+                "properties": {
+                  "fiscalYear": { "type": "integer", "minimum": 2000, "maximum": 2100 },
+                  "periodNumber": { "type": "integer", "minimum": 1, "maximum": 12 },
+                  "periodName": { "type": "string", "maxLength": 50 },
+                  "startDate": { "type": "string", "format": "date" },
+                  "endDate": { "type": "string", "format": "date" }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Fiscal period created successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "periodId": { "type": "string", "format": "uuid" },
+                    "fiscalYear": { "type": "integer" },
+                    "periodNumber": { "type": "integer" },
+                    "periodName": { "type": "string" },
+                    "status": { "type": "string" }
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "get": {
+        "tags": ["GL - Fiscal Periods"],
+        "summary": "Get all fiscal periods",
+        "responses": {
+          "200": {
+            "description": "List of fiscal periods",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "properties": {
+                      "periodId": { "type": "string", "format": "uuid" },
+                      "fiscalYear": { "type": "integer" },
+                      "periodNumber": { "type": "integer" },
+                      "periodName": { "type": "string" },
+                      "startDate": { "type": "string", "format": "date" },
+                      "endDate": { "type": "string", "format": "date" },
+                      "status": { "type": "string" }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/gl/periods/{periodId}": {
+      "get": {
+        "tags": ["GL - Fiscal Periods"],
+        "summary": "Get fiscal period by ID",
+        "parameters": [
+          {
+            "name": "periodId",
+            "in": "path",
+            "required": true,
+            "schema": { "type": "string", "format": "uuid" }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Fiscal period details",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "periodId": { "type": "string", "format": "uuid" },
+                    "fiscalYear": { "type": "integer" },
+                    "periodNumber": { "type": "integer" },
+                    "periodName": { "type": "string" },
+                    "startDate": { "type": "string", "format": "date" },
+                    "endDate": { "type": "string", "format": "date" },
+                    "status": { "type": "string" }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/gl/periods/{periodId}/close": {
+      "post": {
+        "tags": ["GL - Fiscal Periods"],
+        "summary": "Close a fiscal period",
+        "parameters": [
+          {
+            "name": "periodId",
+            "in": "path",
+            "required": true,
+            "schema": { "type": "string", "format": "uuid" }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Period closed successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "periodId": { "type": "string", "format": "uuid" },
+                    "status": { "type": "string" },
+                    "closedAt": { "type": "string", "format": "date-time" },
+                    "closedBy": { "type": "string", "format": "uuid" }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/gl/periods/year/{fiscalYear}": {
+      "get": {
+        "tags": ["GL - Fiscal Periods"],
+        "summary": "Get fiscal periods by year",
+        "parameters": [
+          {
+            "name": "fiscalYear",
+            "in": "path",
+            "required": true,
+            "schema": { "type": "integer", "minimum": 2000, "maximum": 2100 }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "List of fiscal periods for the year",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "properties": {
+                      "periodId": { "type": "string", "format": "uuid" },
+                      "periodNumber": { "type": "integer" },
+                      "periodName": { "type": "string" },
+                      "startDate": { "type": "string", "format": "date" },
+                      "endDate": { "type": "string", "format": "date" },
+                      "status": { "type": "string" }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/gl/periods/current/active": {
+      "get": {
+        "tags": ["GL - Fiscal Periods"],
+        "summary": "Get the current active fiscal period",
+        "responses": {
+          "200": {
+            "description": "Current fiscal period",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "periodId": { "type": "string", "format": "uuid" },
+                    "fiscalYear": { "type": "integer" },
+                    "periodNumber": { "type": "integer" },
+                    "periodName": { "type": "string" },
+                    "startDate": { "type": "string", "format": "date" },
+                    "endDate": { "type": "string", "format": "date" }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/gl/reports/trial-balance": {
+      "get": {
+        "tags": ["GL - Reports"],
+        "summary": "Generate trial balance report",
+        "parameters": [
+          {
+            "name": "asOfDate",
+            "in": "query",
+            "required": false,
+            "schema": { "type": "string", "format": "date" },
+            "description": "As-of date for the report (defaults to current date)"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Trial balance report",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "items": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "accountCode": { "type": "string" },
+                          "accountName": { "type": "string" },
+                          "accountType": { "type": "string" },
+                          "debitBalance": { "type": "number" },
+                          "creditBalance": { "type": "number" }
+                        }
+                      }
+                    },
+                    "totalDebit": { "type": "number" },
+                    "totalCredit": { "type": "number" }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/gl/reports/income-statement": {
+      "get": {
+        "tags": ["GL - Reports"],
+        "summary": "Generate income statement report",
+        "parameters": [
+          {
+            "name": "startDate",
+            "in": "query",
+            "required": true,
+            "schema": { "type": "string", "format": "date" }
+          },
+          {
+            "name": "endDate",
+            "in": "query",
+            "required": true,
+            "schema": { "type": "string", "format": "date" }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Income statement report",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "revenue": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "accountCode": { "type": "string" },
+                          "accountName": { "type": "string" },
+                          "amount": { "type": "number" }
+                        }
+                      }
+                    },
+                    "expenses": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "accountCode": { "type": "string" },
+                          "accountName": { "type": "string" },
+                          "amount": { "type": "number" }
+                        }
+                      }
+                    },
+                    "totalRevenue": { "type": "number" },
+                    "totalExpenses": { "type": "number" },
+                    "netIncome": { "type": "number" }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/gl/reports/balance-sheet": {
+      "get": {
+        "tags": ["GL - Reports"],
+        "summary": "Generate balance sheet report",
+        "parameters": [
+          {
+            "name": "asOfDate",
+            "in": "query",
+            "required": false,
+            "schema": { "type": "string", "format": "date" },
+            "description": "As-of date for the report (defaults to current date)"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Balance sheet report",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "assets": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "accountCode": { "type": "string" },
+                          "accountName": { "type": "string" },
+                          "amount": { "type": "number" }
+                        }
+                      }
+                    },
+                    "liabilities": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "accountCode": { "type": "string" },
+                          "accountName": { "type": "string" },
+                          "amount": { "type": "number" }
+                        }
+                      }
+                    },
+                    "equity": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "accountCode": { "type": "string" },
+                          "accountName": { "type": "string" },
+                          "amount": { "type": "number" }
+                        }
+                      }
+                    },
+                    "totalAssets": { "type": "number" },
+                    "totalLiabilities": { "type": "number" },
+                    "totalEquity": { "type": "number" }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
     }
   },
   "components": {
