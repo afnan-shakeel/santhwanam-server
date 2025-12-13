@@ -55,6 +55,12 @@ router.patch(
 	ctrl.updateRole,
 )
 
+router.get(
+	'/roles/:id',
+	// requirePermission('role.read'),
+	ctrl.getRole,
+)
+
 // Users
 router.post(
 	'/users/search',
@@ -66,6 +72,12 @@ router.patch(
 	'/users/:id',
 	validateBody(updateUserSchema),
 	ctrl.updateUser,
+)
+
+router.get(
+	'/users/:id',
+	// requirePermission('user.read'),
+	ctrl.getUser,
 )
 
 export default router

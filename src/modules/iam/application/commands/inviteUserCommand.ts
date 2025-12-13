@@ -26,7 +26,7 @@ export class InviteUserHandler {
 
   async execute(cmd: InviteUserCommand) {
     if (!cmd || !cmd.email) throw new AppError('Invalid invite payload', 400)
-
+      console.log('InviteUserCommand:', cmd)
     // 1) Create the user in Supabase (invite flow)
     const supUser = await authClientService.inviteUser(cmd.email, cmd.userMetadata)
     if (!supUser || !supUser.id) throw new AppError('Failed to create external auth user', 500)
@@ -38,8 +38,8 @@ export class InviteUserHandler {
     const userRoleRepo = new PrismaUserRoleRepository()
 
     // get actor from request context
-    const actorId = asyncLocalStorage.tryGetUserId()
-    if (!actorId) throw new AppError('Unauthenticated', 401)
+    // const actorId = asyncLocalStorage.tryGetUserId()
+    // if (!actorId) throw new AppError('Unauthenticated', 401)
 
     const created = await prisma.$transaction(async (tx) => {
       const user = await userRepo.create({
@@ -55,7 +55,7 @@ export class InviteUserHandler {
           roleId: r.roleId,
           scopeEntityType: r.scopeEntityType ?? null,
           scopeEntityId: r.scopeEntityId ?? null,
-          assignedBy: actorId,
+          // assignedBy: actorId,
         }))
 
         // create many user roles via repository

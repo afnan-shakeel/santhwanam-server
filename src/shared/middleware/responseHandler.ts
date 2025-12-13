@@ -12,10 +12,12 @@ import { Mapper } from '@/shared/utils/dto/mapper'
  * into an `AppError` and forwards to the normal error handler.
  */
 export function responseHandler(err: any, req: Request, res: Response, next: NextFunction) {
+  console.log('ResponseHandler invoked with err:', err)
   if (!err) return next()
 
   // If it's an AppError or looks like a real Error, forward to error handler
   if (err instanceof AppError || err instanceof Error || (err && typeof err.statusCode === 'number')) {
+    console.error('Response handler forwarding error:', err)
     return next(err)
   }
   // Expect the explicit shape: { dto: ZodSchema, data: any, status?: number }

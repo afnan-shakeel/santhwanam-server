@@ -9,8 +9,8 @@ export const RoleDto = z.object({
   isActive: z.boolean(),
   isSystemRole: z.boolean(),
   permissionIds: z.array(z.string()).optional(),
-  createdAt: z.string(),
-  updatedAt: z.string().nullable().optional(),
+  createdAt: z.date(),
+  updatedAt: z.date().nullable().optional(),
 })
 
 export type Role = z.infer<typeof RoleDto>

@@ -1,4 +1,5 @@
 import express from 'express';
+import cors from 'cors';
 import errorHandler from '@/shared/utils/error-handling/errorHandler'
 import responseHandler from '@/shared/middleware/responseHandler'
 import iamRouter from '@/modules/iam/api/router'
@@ -13,11 +14,16 @@ import { contextMiddleware } from '@/shared/infrastructure/context'
 import { authenticate } from '@/shared/infrastructure/auth/middleware/authenticate'
 import { registerEventHandlers } from '@/config/event-handlers.config'
 import { logger } from '@/shared/utils/logger'
+import requestLogger from '@/shared/middleware/requestLogger'
 
 const app = express();
 
 // Parse JSON first so auth/context can read body if needed
 app.use(express.json());
+
+// Enable CORS for all origins for now (adjust in production)
+app.use(cors());
+app.options('*', cors());
 
 // Register event handlers BEFORE routes
 registerEventHandlers();
@@ -28,6 +34,9 @@ logger.info('Event system initialized');
 app.use(authenticate);
 
 app.use(contextMiddleware);
+
+// Request logging: logs basic request/response info for each hit
+app.use(requestLogger);
 
 app.get('/health', async (req, res) => {
   res.json({ status: 'ok' });

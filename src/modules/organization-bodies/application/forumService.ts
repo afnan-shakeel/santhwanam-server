@@ -39,6 +39,7 @@ export class ForumService {
     }
 
     // Validate established date is not in future
+    console.log('Established Date:', data.establishedDate);
     if (data.establishedDate > new Date()) {
       throw new BadRequestError('establishedDate cannot be in the future');
     }

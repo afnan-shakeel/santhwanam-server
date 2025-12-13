@@ -8,7 +8,7 @@ function isOperationalError(err: any): err is AppError {
 export function errorHandler(err: any, req: Request, res: Response, _next: NextFunction) {
   // Log full error for server-side inspection
   // (Replace with structured logger if available)
-  console.error(err)
+  console.log('XXX>',err)
 
   if (isOperationalError(err)) {
     const status = err.statusCode || 500

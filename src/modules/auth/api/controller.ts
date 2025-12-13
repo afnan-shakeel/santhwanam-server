@@ -3,6 +3,7 @@ import { requestPasswordReset, resetPassword } from '@/modules/auth/application/
 import { supabase } from '@/shared/infrastructure/auth/client/supaBaseClient'
 import prisma from '@/shared/infrastructure/prisma/prismaClient'
 import AppError from '@/shared/utils/error-handling/AppError'
+import { signAccessToken } from '@/shared/infrastructure/auth/jwtService'
 
 export async function requestPasswordResetController(req: Request, res: Response, next: NextFunction) {
   try {
@@ -30,7 +31,9 @@ export async function loginController(req: Request, res: Response, next: NextFun
     const { email, password } = req.body
 
     const { data, error } = await supabase.auth.signInWithPassword({ email, password } as any)
-    if (error) return next(new AppError(error.message || 'Authentication failed', 401, error))
+    if (error) {
+      console.error('Supabase login error:', error)
+      return next(new AppError(error.message || 'Authentication failed', 401, error))}
 
     const session = (data as any)?.session
     const user = (data as any)?.user
@@ -40,8 +43,29 @@ export async function loginController(req: Request, res: Response, next: NextFun
       localUser = await prisma.user.findUnique({ where: { externalAuthId: user.id } })
     }
 
+    // Build our JWT payload from local user + supabase user
+    const subjectId = localUser?.userId ?? user?.id
+    // Fetch roles from local DB (if user exists locally)
+    let roles: string[] = []
+    if (localUser && localUser.userId) {
+      const userRoles = await prisma.userRole.findMany({ where: { userId: localUser.userId }, include: { role: true } })
+      roles = userRoles.map((ur: any) => ur.role?.roleCode).filter(Boolean)
+    }
+
+    const jwtPayload = {
+      sub: subjectId,
+      userId: subjectId,
+      authUserId: user?.id,
+      email: localUser?.email ?? user?.email,
+      roles,
+    }
+
+    const appAccessToken = signAccessToken(jwtPayload)
+
     return res.json({
-      accessToken: session?.access_token ?? null,
+      // Our own signed access token
+      accessToken: appAccessToken,
+      // Keep Supabase refresh token if present (optional)
       refreshToken: session?.refresh_token ?? null,
       expiresAt: session?.expires_at ?? null,
       user: localUser ?? null,
@@ -51,4 +75,4 @@ export async function loginController(req: Request, res: Response, next: NextFun
   }
 }
 
-export default { requestPasswordResetController, resetPasswordController }
+export default { requestPasswordResetController, resetPasswordController, loginController }

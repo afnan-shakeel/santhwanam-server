@@ -44,6 +44,16 @@ export async function searchRoles(req: Request, res: Response, next: NextFunctio
   }
 }
 
+export async function getRole(req: Request, res: Response, next: NextFunction) {
+  try {
+    const id = req.params.id
+    const r = await roleService.getRoleById(id)
+    return next({ dto: RoleDto, data: r, status: 200 })
+  } catch (err) {
+    next(err)
+  }
+}
+
 export async function createRole(req: Request, res: Response, next: NextFunction) {
   try {
     // request body is already validated and parsed by centralized middleware
@@ -79,6 +89,16 @@ export async function updateUser(req: Request, res: Response, next: NextFunction
     const id = req.params.id
     const updated = await (await import('../index')).userService.updateUser(id, req.body)
     return next({ dto: UserDto, data: updated, status: 200 })
+  } catch (err) {
+    next(err)
+  }
+}
+
+export async function getUser(req: Request, res: Response, next: NextFunction) {
+  try {
+    const id = req.params.id
+    const u = await (await import('../index')).userService.getUserById(id)
+    return next({ dto: UserDto, data: u, status: 200 })
   } catch (err) {
     next(err)
   }

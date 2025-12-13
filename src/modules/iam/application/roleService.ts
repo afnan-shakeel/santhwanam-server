@@ -2,6 +2,7 @@ import { RoleRepository, PermissionRepository, RolePermissionRepository } from '
 import { ConflictError } from '@/shared/utils/error-handling/httpErrors'
 import { searchService, SearchRequest } from '@/shared/infrastructure/search'
 import prisma from '@/shared/infrastructure/prisma/prismaClient'
+import { NotFoundError } from '@/shared/utils/error-handling/httpErrors'
 
 export class RoleService {
   constructor(
@@ -12,6 +13,17 @@ export class RoleService {
 
   async listRoles() {
     return this.repo.listAll()
+  }
+
+  async getRoleById(roleId: string) {
+    const r = await this.repo.findById(roleId)
+    if (!r) throw new NotFoundError('Role not found')
+
+    // fetch permission ids associated with role
+    const perms = await prisma.rolePermission.findMany({ where: { roleId } })
+    const permissionIds = perms.map((p) => p.permissionId)
+
+    return { ...r, permissionIds }
   }
 
   async searchRoles(searchRequest: Omit<SearchRequest, 'model'>) {

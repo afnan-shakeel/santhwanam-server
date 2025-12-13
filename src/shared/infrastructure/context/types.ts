@@ -3,6 +3,7 @@
  */
 export interface UserSession {
   userId: string;
+  authUserId?: string;
   email: string;
   roles?: string[];
   permissions?: string[];

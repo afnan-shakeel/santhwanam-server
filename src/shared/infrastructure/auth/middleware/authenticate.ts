@@ -1,4 +1,6 @@
+import AppError from '@/shared/utils/error-handling/AppError';
 import { Request, Response, NextFunction } from 'express';
+import { verifyAccessToken } from '../jwtService';
 
 /**
  * Simple path matcher supporting trailing '*' wildcard.
@@ -27,11 +29,11 @@ export interface AuthOptions {
  */
 export function createAuthMiddleware(options?: AuthOptions) {
   const skipPaths = options?.skipPaths || ['/health', '/api/docs', '/api/openapi.json',
-    '/reset-password-x', '/reset-password-x/confirm'
+    '/reset-password-x', '/reset-password-x/confirm', '/api/auth/login'
   ];
   const skipMethods = (options?.skipMethods || []).map((m) => m.toUpperCase());
 
-  return function authenticate(req: Request, res: Response, next: NextFunction): void {
+  return function authenticate(req: Request, res: Response, next: NextFunction) {
     const path = req.path;
     const method = req.method.toUpperCase();
 
@@ -45,8 +47,25 @@ export function createAuthMiddleware(options?: AuthOptions) {
       return next();
     }
 
-    // No auth implemented yet — leave req.user undefined.
-    // When real auth is added, set `(req as any).user = { ... }` here.
+    const authHeader = req.headers.authorization;
+    if (!authHeader || !authHeader.startsWith('Bearer ')) {
+      throw new AppError('Missing auth or invalid token', 401);
+    }
+    const token = authHeader.substring(7);
+
+    const result = verifyAccessToken(token);
+    if (!result.valid) {
+      throw new AppError('Unauthorized', 401);
+    }
+
+    const payload = result.payload;
+    // Attach a normalized user object expected by context middleware
+    (req as any).user = {
+      userId: payload.sub || payload.userId || payload.id,
+      email: payload.email,
+      roles: payload.roles || [],
+    };
+
     return next();
   };
 }

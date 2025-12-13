@@ -1,5 +1,6 @@
 import { SearchRequest, searchService } from '@/shared/infrastructure/search'
 import { UserRepository } from '../domain/repositories'
+import { NotFoundError } from '@/shared/utils/error-handling/httpErrors'
 
 export class UserService {
   constructor(private userRepo: UserRepository) {}
@@ -15,6 +16,12 @@ export class UserService {
 
     const updated = await this.userRepo.updateById(userId, updates)
     return updated
+  }
+
+  async getUserById(userId: string) {
+    const u = await this.userRepo.findById(userId)
+    if (!u) throw new NotFoundError('User not found')
+    return u
   }
 }
 

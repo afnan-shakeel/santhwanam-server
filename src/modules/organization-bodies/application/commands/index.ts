@@ -23,11 +23,12 @@ export class CreateForumCommand {
 
   async execute(dto: CreateForumDTO) {
     const createdBy = asyncLocalStorage.tryGetUserId();
+    
     if (!createdBy) {
       throw new UnauthorizedError('User not authenticated');
     }
 
-    return this.forumService.createForum({ ...dto, createdBy });
+    return await this.forumService.createForum({ ...dto, createdBy });
   }
 }
 

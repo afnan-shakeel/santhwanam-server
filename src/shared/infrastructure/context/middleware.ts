@@ -9,16 +9,14 @@ import { RequestContext, UserSession } from './types';
  */
 function extractUserSession(req: Request): UserSession | undefined {
   const user = (req as any).user;
-  
   if (!user) {
     return undefined;
   }
-
   return {
     userId: user.userId || user.id,
+    authUserId: user.authUserId,
     email: user.email,
     roles: user.roles,
-    permissions: user.permissions,
   };
 }
 
