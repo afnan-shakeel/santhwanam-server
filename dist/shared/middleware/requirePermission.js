@@ -31,7 +31,7 @@ export function requirePermission(permissionCode, contextExtractor) {
                 const role = ur.role;
                 // If role is global, it applies
                 if (role.scopeType === 'None') {
-                    return role.rolePermissions.some(rp => rp.permission.permissionCode === permissionCode);
+                    return role.rolePermissions.some((rp) => rp.permission.permissionCode === permissionCode);
                 }
                 // For scoped roles, ensure the userRole scope matches the requested context
                 if (role.scopeType === 'Forum' && context.forumId) {
@@ -53,7 +53,7 @@ export function requirePermission(permissionCode, contextExtractor) {
                 // If no matching context provided, scoped role does not apply
                 // (This is conservative; callers should provide contextExtractor when needed)
                 // if (role.scopeType !== 'None' && !ur.scopeEntityId) return false
-                return role.rolePermissions.some(rp => rp.permission.permissionCode === permissionCode);
+                return role.rolePermissions.some((rp) => rp.permission.permissionCode === permissionCode);
             });
             if (!allowed)
                 return next(new AppError('Permission denied', 403));

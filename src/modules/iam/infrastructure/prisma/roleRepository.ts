@@ -1,5 +1,5 @@
 import prisma from '@/shared/infrastructure/prisma/prismaClient'
-import { PrismaClient } from '@/generated/prisma/client'
+import { PrismaClient } from '../../../../generated/prisma/client'
 import { Role } from '../../domain/entities'
 import { RoleRepository } from '../../domain/repositories'
 

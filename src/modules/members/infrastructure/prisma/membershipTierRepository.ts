@@ -3,7 +3,7 @@
 import { MembershipTier } from "../../domain/entities";
 import { MembershipTierRepository } from "../../domain/repositories";
 import prisma from "@/shared/infrastructure/prisma/prismaClient";
-import { Prisma } from "@/generated/prisma/client";
+import { Prisma } from "../../../../generated/prisma/client";
 
 export class PrismaMembershipTierRepository
   implements MembershipTierRepository
@@ -58,7 +58,7 @@ export class PrismaMembershipTierRepository
       where,
       orderBy: { tierCode: "asc" },
     });
-    return tiers.map((t) => this.toDomain(t));
+    return tiers.map((t: any) => this.toDomain(t));
   }
 
   async findDefault(): Promise<MembershipTier | null> {

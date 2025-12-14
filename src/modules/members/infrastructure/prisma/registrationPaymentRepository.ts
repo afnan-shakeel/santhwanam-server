@@ -3,7 +3,7 @@
 import { RegistrationPayment } from "../../domain/entities";
 import { RegistrationPaymentRepository } from "../../domain/repositories";
 import prisma from "@/shared/infrastructure/prisma/prismaClient";
-import { Prisma } from "@/generated/prisma/client";
+import { Prisma } from "../../../../generated/prisma/client";
 
 export class PrismaRegistrationPaymentRepository
   implements RegistrationPaymentRepository

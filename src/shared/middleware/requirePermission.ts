@@ -35,12 +35,12 @@ export function requirePermission(permissionCode: string, contextExtractor?: (re
       })
 
       // Collect permission codes from roles that apply in this context
-      const allowed = userRoles.some((ur) => {
+      const allowed = userRoles.some((ur: any) => {
         const role = ur.role
 
         // If role is global, it applies
         if (role.scopeType === 'None') {
-          return role.rolePermissions.some(rp => rp.permission.permissionCode === permissionCode)
+          return role.rolePermissions.some((rp: any) => rp.permission.permissionCode === permissionCode)
         }
 
         // For scoped roles, ensure the userRole scope matches the requested context
@@ -61,7 +61,7 @@ export function requirePermission(permissionCode: string, contextExtractor?: (re
         // (This is conservative; callers should provide contextExtractor when needed)
         // if (role.scopeType !== 'None' && !ur.scopeEntityId) return false
 
-        return role.rolePermissions.some(rp => rp.permission.permissionCode === permissionCode)
+        return role.rolePermissions.some((rp: any) => rp.permission.permissionCode === permissionCode)
       })
 
       if (!allowed) return next(new AppError('Permission denied', 403))

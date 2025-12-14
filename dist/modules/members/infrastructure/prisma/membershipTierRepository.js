@@ -1,6 +1,6 @@
 // Infrastructure: Prisma implementation of MembershipTierRepository
 import prisma from "@/shared/infrastructure/prisma/prismaClient";
-import { Prisma } from "@/generated/prisma/client";
+import { Prisma } from "../../../../generated/prisma/client";
 export class PrismaMembershipTierRepository {
     async create(tier, tx) {
         const db = tx || prisma;

@@ -1,6 +1,7 @@
 /**
  * Controller for Agents API
  */
+import { AgentDto, AgentListDto, AgentSubmissionDto, AgentsSearchResponseDto } from './dtos/agentDtos';
 export class AgentsController {
     agentService;
     startRegistrationCmd;
@@ -22,7 +23,7 @@ export class AgentsController {
      */
     startRegistration = async (req, res, next) => {
         const agent = await this.startRegistrationCmd.execute(req.body);
-        next({ dto: "Agent", data: agent, status: 201 });
+        next({ dto: AgentDto, data: agent, status: 201 });
     };
     /**
      * PATCH /api/agents/:agentId/draft
@@ -34,7 +35,7 @@ export class AgentsController {
             agentId,
             ...req.body,
         });
-        next({ dto: "Agent", data: agent, status: 200 });
+        next({ dto: AgentDto, data: agent, status: 200 });
     };
     /**
      * POST /api/agents/:agentId/submit
@@ -43,7 +44,7 @@ export class AgentsController {
     submitRegistration = async (req, res, next) => {
         const { agentId } = req.params;
         const result = await this.submitRegistrationCmd.execute({ agentId });
-        next({ dto: "AgentSubmission", data: result, status: 200 });
+        next({ dto: AgentSubmissionDto, data: result, status: 200 });
     };
     /**
      * PATCH /api/agents/:agentId
@@ -55,7 +56,7 @@ export class AgentsController {
             agentId,
             ...req.body,
         });
-        next({ dto: "Agent", data: agent, status: 200 });
+        next({ dto: AgentDto, data: agent, status: 200 });
     };
     /**
      * POST /api/agents/:agentId/terminate
@@ -67,7 +68,7 @@ export class AgentsController {
             agentId,
             ...req.body,
         });
-        next({ dto: "Agent", data: agent, status: 200 });
+        next({ dto: AgentDto, data: agent, status: 200 });
     };
     /**
      * GET /api/agents/:agentId
@@ -76,7 +77,7 @@ export class AgentsController {
     getAgentById = async (req, res, next) => {
         const { agentId } = req.params;
         const agent = await this.agentService.getAgentById(agentId);
-        next({ dto: "Agent", data: agent, status: 200 });
+        next({ dto: AgentDto, data: agent, status: 200 });
     };
     /**
      * GET /api/agents/unit/:unitId
@@ -87,7 +88,7 @@ export class AgentsController {
         const skip = parseInt(req.query.skip) || 0;
         const take = parseInt(req.query.take) || 20;
         const result = await this.agentService.listByUnit(unitId, skip, take);
-        next({ dto: "AgentList", data: result, status: 200 });
+        next({ dto: AgentListDto, data: result, status: 200 });
     };
     /**
      * GET /api/agents/area/:areaId
@@ -98,7 +99,7 @@ export class AgentsController {
         const skip = parseInt(req.query.skip) || 0;
         const take = parseInt(req.query.take) || 20;
         const result = await this.agentService.listByArea(areaId, skip, take);
-        next({ dto: "AgentList", data: result, status: 200 });
+        next({ dto: AgentListDto, data: result, status: 200 });
     };
     /**
      * GET /api/agents/forum/:forumId
@@ -109,7 +110,7 @@ export class AgentsController {
         const skip = parseInt(req.query.skip) || 0;
         const take = parseInt(req.query.take) || 20;
         const result = await this.agentService.listByForum(forumId, skip, take);
-        next({ dto: "AgentList", data: result, status: 200 });
+        next({ dto: AgentListDto, data: result, status: 200 });
     };
     /**
      * POST /api/agents/search
@@ -117,6 +118,6 @@ export class AgentsController {
      */
     searchAgents = async (req, res, next) => {
         const result = await this.agentService.searchAgents(req.body);
-        next({ dto: "SearchResult", data: result, status: 200 });
+        next({ dto: AgentsSearchResponseDto, data: result, status: 200 });
     };
 }

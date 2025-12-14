@@ -35,4 +35,10 @@ export const modelConfigs = {
         filters: ['isActive', 'createdAt', 'unitName', 'areaId', 'forumId'],
         relations: ['agents', 'members'],
     },
+    Agent: {
+        searchable: ['agentName', 'agentCode'],
+        sortable: ['createdAt', 'agentName', 'agentCode'],
+        filters: ['isActive', 'createdAt', 'agentName', 'agentCode', 'unitId'],
+        relations: [],
+    }
 };

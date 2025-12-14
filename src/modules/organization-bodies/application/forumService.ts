@@ -57,7 +57,7 @@ export class ForumService {
     }
 
     // Create forum in transaction
-    return await prisma.$transaction(async (tx) => {
+    return await prisma.$transaction(async (tx: any) => {
       const forum = await this.forumRepo.create(data, tx);
 
       // TODO: Assign Forum Admin role to adminUserId
@@ -115,7 +115,7 @@ export class ForumService {
       throw new NotFoundError('New admin user not found');
     }
 
-    return await prisma.$transaction(async (tx) => {
+    return await prisma.$transaction(async (tx: any) => {
       const updatedForum = await this.forumRepo.updateAdmin(
         forumId,
         newAdminUserId,

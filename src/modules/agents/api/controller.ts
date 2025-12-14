@@ -4,6 +4,7 @@
 
 import type { Request, Response, NextFunction } from "express";
 import type { AgentService } from "../application/agentService";
+import { AgentDto, AgentListDto, AgentSubmissionDto, AgentsSearchResponseDto } from './dtos/agentDtos'
 import {
   StartAgentRegistrationHandler,
   UpdateAgentDraftHandler,
@@ -32,7 +33,7 @@ export class AgentsController {
     next: NextFunction
   ) => {
     const agent = await this.startRegistrationCmd.execute(req.body);
-    next({ dto: "Agent", data: agent, status: 201 });
+    next({ dto: AgentDto, data: agent, status: 201 });
   };
 
   /**
@@ -45,7 +46,7 @@ export class AgentsController {
       agentId,
       ...req.body,
     });
-    next({ dto: "Agent", data: agent, status: 200 });
+    next({ dto: AgentDto, data: agent, status: 200 });
   };
 
   /**
@@ -59,7 +60,7 @@ export class AgentsController {
   ) => {
     const { agentId } = req.params;
     const result = await this.submitRegistrationCmd.execute({ agentId });
-    next({ dto: "AgentSubmission", data: result, status: 200 });
+    next({ dto: AgentSubmissionDto, data: result, status: 200 });
   };
 
   /**
@@ -72,7 +73,7 @@ export class AgentsController {
       agentId,
       ...req.body,
     });
-    next({ dto: "Agent", data: agent, status: 200 });
+    next({ dto: AgentDto, data: agent, status: 200 });
   };
 
   /**
@@ -85,7 +86,7 @@ export class AgentsController {
       agentId,
       ...req.body,
     });
-    next({ dto: "Agent", data: agent, status: 200 });
+    next({ dto: AgentDto, data: agent, status: 200 });
   };
 
   /**
@@ -95,7 +96,7 @@ export class AgentsController {
   getAgentById = async (req: Request, res: Response, next: NextFunction) => {
     const { agentId } = req.params;
     const agent = await this.agentService.getAgentById(agentId);
-    next({ dto: "Agent", data: agent, status: 200 });
+    next({ dto: AgentDto, data: agent, status: 200 });
   };
 
   /**
@@ -107,7 +108,7 @@ export class AgentsController {
     const skip = parseInt(req.query.skip as string) || 0;
     const take = parseInt(req.query.take as string) || 20;
     const result = await this.agentService.listByUnit(unitId, skip, take);
-    next({ dto: "AgentList", data: result, status: 200 });
+    next({ dto: AgentListDto, data: result, status: 200 });
   };
 
   /**
@@ -119,7 +120,7 @@ export class AgentsController {
     const skip = parseInt(req.query.skip as string) || 0;
     const take = parseInt(req.query.take as string) || 20;
     const result = await this.agentService.listByArea(areaId, skip, take);
-    next({ dto: "AgentList", data: result, status: 200 });
+    next({ dto: AgentListDto, data: result, status: 200 });
   };
 
   /**
@@ -131,7 +132,7 @@ export class AgentsController {
     const skip = parseInt(req.query.skip as string) || 0;
     const take = parseInt(req.query.take as string) || 20;
     const result = await this.agentService.listByForum(forumId, skip, take);
-    next({ dto: "AgentList", data: result, status: 200 });
+    next({ dto: AgentListDto, data: result, status: 200 });
   };
 
   /**
@@ -140,6 +141,6 @@ export class AgentsController {
    */
   searchAgents = async (req: Request, res: Response, next: NextFunction) => {
     const result = await this.agentService.searchAgents(req.body);
-    next({ dto: "SearchResult", data: result, status: 200 });
+    next({ dto: AgentsSearchResponseDto, data: result, status: 200 });
   };
 }

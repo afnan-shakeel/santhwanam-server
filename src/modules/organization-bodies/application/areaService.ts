@@ -65,7 +65,7 @@ export class AreaService {
       throw new NotFoundError('Admin user not found');
     }
 
-    return await prisma.$transaction(async (tx) => {
+    return await prisma.$transaction(async (tx: any) => {
       const area = await this.areaRepo.create(data, tx);
 
       // TODO: Assign Area Admin role to adminUserId
@@ -122,7 +122,7 @@ export class AreaService {
       throw new NotFoundError('New admin user not found');
     }
 
-    return await prisma.$transaction(async (tx) => {
+    return await prisma.$transaction(async (tx: any) => {
       const updatedArea = await this.areaRepo.updateAdmin(
         areaId,
         newAdminUserId,

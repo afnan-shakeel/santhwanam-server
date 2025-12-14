@@ -66,7 +66,7 @@ export class UnitService {
       throw new NotFoundError('Admin user not found');
     }
 
-    return await prisma.$transaction(async (tx) => {
+    return await prisma.$transaction(async (tx: any) => {
       const unit = await this.unitRepo.create(
         {
           ...data,
@@ -129,7 +129,7 @@ export class UnitService {
       throw new NotFoundError('New admin user not found');
     }
 
-    return await prisma.$transaction(async (tx) => {
+    return await prisma.$transaction(async (tx: any) => {
       const updatedUnit = await this.unitRepo.updateAdmin(
         unitId,
         newAdminUserId,

@@ -1,6 +1,6 @@
 // Infrastructure: Prisma implementation of RegistrationPaymentRepository
 import prisma from "@/shared/infrastructure/prisma/prismaClient";
-import { Prisma } from "@/generated/prisma/client";
+import { Prisma } from "../../../../generated/prisma/client";
 export class PrismaRegistrationPaymentRepository {
     async create(payment, tx) {
         const db = tx || prisma;
