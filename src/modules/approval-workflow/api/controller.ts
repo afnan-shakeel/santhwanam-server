@@ -14,6 +14,8 @@ import type {
   SubmitRequestDTO,
   ProcessApprovalDTO,
 } from './validators';
+import { ApprovalWorkflowsSearchResponseDto } from './dtos/workflowDtos';
+import { ApprovalRequestsSearchResponseDto } from './dtos/requestDtos';
 
 export class ApprovalWorkflowController {
   constructor(
@@ -84,6 +86,18 @@ export class ApprovalWorkflowController {
       data: workflows,
       status: 200,
     });
+  };
+
+  searchWorkflows = async (req: Request, res: Response, next: NextFunction) => {
+    const searchReq = req.body as any;
+    const result = await this.workflowService.searchWorkflows(searchReq);
+    next({ dto: ApprovalWorkflowsSearchResponseDto, data: result, status: 200 });
+  };
+
+  searchRequests = async (req: Request, res: Response, next: NextFunction) => {
+    const searchReq = req.body as any;
+    const result = await this.requestService.searchRequests(searchReq);
+    next({ dto: ApprovalRequestsSearchResponseDto, data: result, status: 200 });
   };
 
   submitRequest = async (req: Request, res: Response, next: NextFunction) => {

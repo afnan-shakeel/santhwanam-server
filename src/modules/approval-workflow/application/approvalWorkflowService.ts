@@ -10,6 +10,7 @@ import type {
 import type { ApprovalWorkflow, ApprovalStage, WorkflowModule } from '../domain/entities';
 import { BadRequestError, NotFoundError } from '@/shared/utils/error-handling/httpErrors';
 import prisma from '@/shared/infrastructure/prisma/prismaClient';
+import { searchService, SearchRequest } from '@/shared/infrastructure/search';
 
 export class ApprovalWorkflowService {
   constructor(
@@ -153,5 +154,12 @@ export class ApprovalWorkflowService {
    */
   async listAllWorkflows(): Promise<ApprovalWorkflow[]> {
     return this.workflowRepo.listAll();
+  }
+
+  async searchWorkflows(searchRequest: Omit<SearchRequest, 'model'>) {
+    return searchService.execute({
+      ...searchRequest,
+      model: 'ApprovalWorkflow',
+    });
   }
 }

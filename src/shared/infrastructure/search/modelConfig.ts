@@ -25,6 +25,18 @@ export const modelConfigs: ModelConfigs = {
     filters: ['isActive', 'createdAt', 'forumName', 'forumCode','adminUserId'],
     relations: ['areas'],
   },
+  ApprovalWorkflow: {
+    searchable: ['workflowCode', 'workflowName', 'entityType', 'module'],
+    sortable: ['createdAt', 'workflowCode', 'workflowName'],
+    filters: ['isActive', 'module', 'entityType', 'workflowCode', 'createdAt'],
+    relations: ['stages', 'requests'],
+  },
+  ApprovalRequest: {
+    searchable: ['entityType', 'entityId', 'requestedBy', 'status'],
+    sortable: ['requestedAt', 'status'],
+    filters: ['status', 'workflowId', 'requestedBy', 'entityType', 'forumId', 'areaId', 'unitId', 'createdAt'],
+    relations: ['executions', 'workflow'],
+  },
   Area: {
     searchable: ['areaName'],
     sortable: ['createdAt', 'areaName'],

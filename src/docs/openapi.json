@@ -528,6 +528,30 @@
         }
       }
     },
+    "/api/approval-workflows/workflows/search": {
+      "post": {
+        "tags": ["Approval Workflow - Workflows"],
+        "summary": "Search approval workflows",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": { "$ref": "#/components/schemas/SearchRequest" }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Search results",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ApprovalWorkflowsSearchResponse" }
+              }
+            }
+          }
+        }
+      }
+    },
     "/api/approval-workflows/workflows/{workflowId}": {
       "get": {
         "tags": ["Approval Workflow - Workflows"],
@@ -686,6 +710,30 @@
                     "status": { "type": "string" }
                   }
                 }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/approval-workflows/requests/search": {
+      "post": {
+        "tags": ["Approval Workflow - Requests"],
+        "summary": "Search approval requests",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": { "$ref": "#/components/schemas/SearchRequest" }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Search results",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ApprovalRequestsSearchResponse" }
               }
             }
           }
@@ -3401,6 +3449,56 @@
             }
           }
         }
+      }
+    }
+    ,
+    "ApprovalWorkflow": {
+      "type": "object",
+      "properties": {
+        "workflowId": { "type": "string" },
+        "workflowCode": { "type": "string" },
+        "workflowName": { "type": "string" },
+        "description": { "type": "string", "nullable": true },
+        "module": { "type": "string" },
+        "entityType": { "type": "string" },
+        "isActive": { "type": "boolean" },
+        "requiresAllStages": { "type": "boolean" },
+        "createdAt": { "type": "string", "format": "date-time" }
+      }
+    },
+    "ApprovalWorkflowsSearchResponse": {
+      "type": "object",
+      "properties": {
+        "items": { "type": "array", "items": { "$ref": "#/components/schemas/ApprovalWorkflow" } },
+        "total": { "type": "integer" },
+        "page": { "type": "integer" },
+        "pageSize": { "type": "integer" },
+        "totalPages": { "type": "integer" }
+      }
+    },
+    "ApprovalRequest": {
+      "type": "object",
+      "properties": {
+        "requestId": { "type": "string" },
+        "workflowId": { "type": "string" },
+        "entityType": { "type": "string" },
+        "entityId": { "type": "string" },
+        "forumId": { "type": ["string", "null"] },
+        "areaId": { "type": ["string", "null"] },
+        "unitId": { "type": ["string", "null"] },
+        "requestedBy": { "type": "string" },
+        "requestedAt": { "type": "string", "format": "date-time" },
+        "status": { "type": "string" }
+      }
+    },
+    "ApprovalRequestsSearchResponse": {
+      "type": "object",
+      "properties": {
+        "items": { "type": "array", "items": { "$ref": "#/components/schemas/ApprovalRequest" } },
+        "total": { "type": "integer" },
+        "page": { "type": "integer" },
+        "pageSize": { "type": "integer" },
+        "totalPages": { "type": "integer" }
       }
     }
   },

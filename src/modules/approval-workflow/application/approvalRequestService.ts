@@ -22,6 +22,7 @@ import type {
 import type { ForumRepository, AreaRepository, UnitRepository } from '@/modules/organization-bodies/domain/repositories';
 import { BadRequestError, NotFoundError, ForbiddenError } from '@/shared/utils/error-handling/httpErrors';
 import prisma  from '@/shared/infrastructure/prisma/prismaClient';
+import { searchService, SearchRequest } from '@/shared/infrastructure/search';
 
 export class ApprovalRequestService {
   constructor(
@@ -114,6 +115,13 @@ export class ApprovalRequestService {
 
       return { request, executions };
     });
+  }
+
+  async searchRequests(searchRequest: Omit<SearchRequest, 'model'>) {
+    return searchService.execute({
+      ...searchRequest,
+      model: 'ApprovalRequest',
+    })
   }
 
   /**
