@@ -10,6 +10,7 @@ import { organizationBodiesRouter } from '@/modules/organization-bodies'
 import { agentsRouter } from '@/modules/agents'
 import { membersRouter } from '@/modules/members'
 import { glRouter } from '@/modules/gl'
+import { membershipRouter } from '@/modules/membership'
 import { contextMiddleware } from '@/shared/infrastructure/context'
 import { authenticate } from '@/shared/infrastructure/auth/middleware/authenticate'
 import { registerEventHandlers } from '@/config/event-handlers.config'
@@ -62,6 +63,9 @@ app.use('/api/agents', agentsRouter)
 
 // Members API
 app.use('/api/members', membersRouter)
+
+// Membership API
+app.use('/api/membership', membershipRouter)
 
 // GL API
 app.use('/api/gl', glRouter)

@@ -6,8 +6,8 @@ import { z } from 'zod';
 import {
   WorkflowModule,
   ApproverType,
-  HierarchyLevel,
   ApprovalDecision,
+  organizationBody,
 } from '../domain/entities';
 
 export const createWorkflowSchema = z.object({
@@ -25,7 +25,7 @@ export const createWorkflowSchema = z.object({
       approverType: z.nativeEnum(ApproverType),
       roleId: z.string().uuid().nullable().optional(),
       userId: z.string().uuid().nullable().optional(),
-      hierarchyLevel: z.nativeEnum(HierarchyLevel).nullable().optional(),
+      organizationBody: z.nativeEnum(organizationBody).nullable().optional(),
       isOptional: z.boolean().optional(),
       autoApprove: z.boolean().optional(),
     })
@@ -37,6 +37,19 @@ export const updateWorkflowSchema = z.object({
   description: z.string().nullable().optional(),
   isActive: z.boolean().optional(),
   requiresAllStages: z.boolean().optional(),
+  stages: z.array(
+    z.object({
+      stageId: z.string().uuid().nullable().optional(), // null/undefined = new stage, uuid = update existing
+      stageName: z.string().min(1),
+      stageOrder: z.number().int().positive(),
+      approverType: z.nativeEnum(ApproverType),
+      roleId: z.string().uuid().nullable().optional(),
+      userId: z.string().uuid().nullable().optional(),
+      organizationBody: z.nativeEnum(organizationBody).nullable().optional(),
+      isOptional: z.boolean().optional(),
+      autoApprove: z.boolean().optional(),
+    })
+  ).min(1).optional(),
 });
 
 export const submitRequestSchema = z.object({

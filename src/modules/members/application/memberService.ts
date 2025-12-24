@@ -43,6 +43,7 @@ import {
   RegistrationPaymentRecordedEvent,
 } from "../domain/events";
 import { generateMemberCode, calculateAge } from "./helpers";
+import { asyncLocalStorage } from "@/shared/infrastructure/context";
 
 // ===== Step 1: Personal Details =====
 
@@ -182,6 +183,9 @@ export class MemberService {
       // In production, fetch unit to get areaId and forumId
       // For now, we'll need to pass these or fetch from a unit repository
 
+      // if not createdBy, add it
+      const userId = asyncLocalStorage.getUserId()
+
       // Create member record
       const memberId = uuidv4();
       const member = await this.memberRepository.create(
@@ -215,7 +219,7 @@ export class MemberService {
           suspensionReason: null,
           suspendedAt: null,
           registeredAt: null,
-          createdBy: input.createdBy,
+          createdBy: userId,
           approvedBy: null,
         },
         tx

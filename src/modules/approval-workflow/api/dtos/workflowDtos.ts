@@ -1,5 +1,17 @@
 import { z } from 'zod'
 
+export const ApprovalStageDto = z.object({
+  stageId: z.string(),
+  stageName: z.string(),
+  stageOrder: z.number(),
+  approverType: z.string(),
+  roleId: z.string().nullable().optional(),
+  userId: z.string().nullable().optional(),
+  organizationBody: z.string().nullable().optional(),
+  isOptional: z.boolean().optional(),
+  autoApprove: z.boolean().optional(),
+})
+
 export const ApprovalWorkflowDto = z.object({
   workflowId: z.string(),
   workflowCode: z.string(),
@@ -13,6 +25,7 @@ export const ApprovalWorkflowDto = z.object({
   createdBy: z.string().nullable().optional(),
   updatedAt: z.date().nullable().optional(),
   updatedBy: z.string().nullable().optional(),
+  stages: z.array(ApprovalStageDto).optional(),
 })
 
 export type ApprovalWorkflow = z.infer<typeof ApprovalWorkflowDto>
@@ -28,3 +41,8 @@ export const ApprovalWorkflowsSearchResponseDto = z.object({
 export type ApprovalWorkflowsSearchResponse = z.infer<typeof ApprovalWorkflowsSearchResponseDto>
 
 export default ApprovalWorkflowDto
+
+export const ApprovalWorkflowListDto = z.array(ApprovalWorkflowDto)
+
+export type ApprovalWorkflowList = z.infer<typeof ApprovalWorkflowListDto>
+

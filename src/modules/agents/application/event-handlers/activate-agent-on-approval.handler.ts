@@ -36,6 +36,7 @@ export class ActivateAgentOnApprovalHandler implements IEventHandler<DomainEvent
   async handle(event: DomainEvent): Promise<void> {
     const payload = event.payload as unknown as ApprovalRequestApprovedPayload;
 
+    console.log('ActivateAgentOnApprovalHandler received event:', event.eventType, 'with payload:', payload);
     // Only handle agent registration approvals
     if (payload.workflowCode !== 'agent_registration' || payload.entityType !== 'Agent') {
       return;

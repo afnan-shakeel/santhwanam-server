@@ -13,6 +13,7 @@ import { PrismaUnitRepository } from '@/modules/organization-bodies/infrastructu
 import { ApprovalWorkflowService } from './application/approvalWorkflowService';
 import { ApprovalRequestService } from './application/approvalRequestService';
 import { CreateWorkflowCommand } from './application/commands/createWorkflowCommand';
+import { UpdateWorkflowCommand } from './application/commands/updateWorkflowCommand';
 import { SubmitRequestCommand } from './application/commands/submitRequestCommand';
 import { ProcessApprovalCommand } from './application/commands/processApprovalCommand';
 import { ApprovalWorkflowController } from './api/controller';
@@ -28,7 +29,7 @@ const areaRepo = new PrismaAreaRepository();
 const unitRepo = new PrismaUnitRepository();
 
 // Initialize services
-const workflowService = new ApprovalWorkflowService(workflowRepo, stageRepo);
+const workflowService = new ApprovalWorkflowService(workflowRepo, stageRepo, requestRepo);
 const requestService = new ApprovalRequestService(
   workflowRepo,
   stageRepo,
@@ -41,6 +42,7 @@ const requestService = new ApprovalRequestService(
 
 // Initialize commands
 const createWorkflowCommand = new CreateWorkflowCommand(workflowService);
+const updateWorkflowCommand = new UpdateWorkflowCommand(workflowService);
 const submitRequestCommand = new SubmitRequestCommand(requestService);
 const processApprovalCommand = new ProcessApprovalCommand(requestService);
 
@@ -49,6 +51,7 @@ const controller = new ApprovalWorkflowController(
   workflowService,
   requestService,
   createWorkflowCommand,
+  updateWorkflowCommand,
   submitRequestCommand,
   processApprovalCommand
 );

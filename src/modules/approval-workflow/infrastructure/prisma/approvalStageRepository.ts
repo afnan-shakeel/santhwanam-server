@@ -16,7 +16,7 @@ export class PrismaApprovalStageRepository implements ApprovalStageRepository {
       approverType: string;
       roleId?: string | null;
       userId?: string | null;
-      hierarchyLevel?: string | null;
+      organizationBody?: string | null;
       isOptional?: boolean;
       autoApprove?: boolean;
     },
@@ -31,7 +31,7 @@ export class PrismaApprovalStageRepository implements ApprovalStageRepository {
         approverType: data.approverType,
         roleId: data.roleId,
         userId: data.userId,
-        hierarchyLevel: data.hierarchyLevel,
+        organizationBody: data.organizationBody,
         isOptional: data.isOptional ?? false,
         autoApprove: data.autoApprove ?? false,
       },
@@ -45,7 +45,7 @@ export class PrismaApprovalStageRepository implements ApprovalStageRepository {
     approverType: string;
     roleId?: string | null;
     userId?: string | null;
-    hierarchyLevel?: string | null;
+    organizationBody?: string | null;
     isOptional?: boolean;
     autoApprove?: boolean;
   }>, tx?: any): Promise<void> {
@@ -58,7 +58,7 @@ export class PrismaApprovalStageRepository implements ApprovalStageRepository {
         approverType: stage.approverType,
         roleId: stage.roleId,
         userId: stage.userId,
-        hierarchyLevel: stage.hierarchyLevel,
+        organizationBody: stage.organizationBody,
         isOptional: stage.isOptional ?? false,
         autoApprove: stage.autoApprove ?? false,
       })),
@@ -80,10 +80,51 @@ export class PrismaApprovalStageRepository implements ApprovalStageRepository {
     });
   }
 
+  async update(
+    stageId: string,
+    data: {
+      stageName?: string;
+      stageOrder?: number;
+      approverType?: string;
+      roleId?: string | null;
+      userId?: string | null;
+      organizationBody?: string | null;
+      isOptional?: boolean;
+      autoApprove?: boolean;
+      updatedBy?: string | null;
+    },
+    tx?: any
+  ): Promise<ApprovalStage> {
+    const client = tx ?? prisma;
+    return client.approvalStage.update({
+      where: { stageId },
+      data: {
+        ...data,
+        updatedAt: new Date(),
+      },
+    });
+  }
+
   async deleteByWorkflow(workflowId: string, tx?: any): Promise<void> {
     const client = tx ?? prisma;
     await client.approvalStage.deleteMany({
       where: { workflowId },
+    });
+  }
+
+  async deleteByIds(stageIds: string[], tx?: any): Promise<void> {
+    const client = tx ?? prisma;
+    await client.approvalStage.deleteMany({
+      where: {
+        stageId: { in: stageIds },
+      },
+    });
+  }
+
+  async countExecutionsByStageId(stageId: string, tx?: any): Promise<number> {
+    const client = tx ?? prisma;
+    return client.approvalStageExecution.count({
+      where: { stageId },
     });
   }
 }

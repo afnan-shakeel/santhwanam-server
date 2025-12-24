@@ -129,6 +129,7 @@ model PasswordResetToken {
 // See `docs/domain/2.approval_workflow.md` for details
 
 enum WorkflowModule {
+  Agents
   Membership
   Wallet
   Claims
@@ -140,9 +141,10 @@ enum ApproverType {
   Role
   SpecificUser
   Hierarchy
+  OrganizationAdmin
 }
 
-enum HierarchyLevel {
+enum OrganizationBody {
   Unit
   Area
   Forum
@@ -197,12 +199,17 @@ model ApprovalStage {
   approverType   ApproverType
   roleId         String?
   userId         String?
-  hierarchyLevel HierarchyLevel?
+  organizationBody OrganizationBody?
   isOptional     Boolean        @default(false)
   autoApprove    Boolean        @default(false)
+  createdBy      String?
   createdAt      DateTime       @default(now())
+  updatedAt      DateTime?
+  updatedBy      String?
 
   executions     ApprovalStageExecution[]
+
+
 
   @@unique([workflowId, stageOrder])
   @@index([workflowId, stageOrder])

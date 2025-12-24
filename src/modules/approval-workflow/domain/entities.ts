@@ -4,6 +4,7 @@
  */
 
 export enum WorkflowModule {
+  Agents = 'Agents',
   Membership = 'Membership',
   Wallet = 'Wallet',
   Claims = 'Claims',
@@ -15,9 +16,10 @@ export enum ApproverType {
   Role = 'Role',
   SpecificUser = 'SpecificUser',
   Hierarchy = 'Hierarchy',
+  OrganizationAdmin = 'OrganizationAdmin'
 }
 
-export enum HierarchyLevel {
+export enum organizationBody {
   Unit = 'Unit',
   Area = 'Area',
   Forum = 'Forum',
@@ -55,6 +57,7 @@ export interface ApprovalWorkflow {
   createdBy?: string | null;
   updatedAt?: Date | null;
   updatedBy?: string | null;
+  stages?: ApprovalStage[];
 }
 
 export interface ApprovalStage {
@@ -65,7 +68,7 @@ export interface ApprovalStage {
   approverType: ApproverType;
   roleId?: string | null;
   userId?: string | null;
-  hierarchyLevel?: HierarchyLevel | null;
+  organizationBody?: organizationBody | null;
   isOptional: boolean;
   autoApprove: boolean;
   createdAt: Date;

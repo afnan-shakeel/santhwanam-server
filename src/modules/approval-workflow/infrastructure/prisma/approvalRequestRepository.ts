@@ -99,4 +99,14 @@ export class PrismaApprovalRequestRepository implements ApprovalRequestRepositor
       orderBy: { requestedAt: 'desc' },
     });
   }
+
+  async countPendingByWorkflow(workflowId: string, tx?: any): Promise<number> {
+    const client = tx ?? prisma;
+    return client.approvalRequest.count({
+      where: {
+        workflowId,
+        status: 'Pending',
+      },
+    });
+  }
 }

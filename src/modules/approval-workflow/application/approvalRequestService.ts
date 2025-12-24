@@ -17,12 +17,18 @@ import type {
   ApprovalRequestStatus,
   ApprovalStageStatus,
   ApproverType,
-  HierarchyLevel,
+  organizationBody,
 } from '../domain/entities';
 import type { ForumRepository, AreaRepository, UnitRepository } from '@/modules/organization-bodies/domain/repositories';
 import { BadRequestError, NotFoundError, ForbiddenError } from '@/shared/utils/error-handling/httpErrors';
 import prisma  from '@/shared/infrastructure/prisma/prismaClient';
 import { searchService, SearchRequest } from '@/shared/infrastructure/search';
+import { ApprovalWorkflow } from '../api/dtos/workflowDtos';
+import { eventBus } from '@/shared/domain/events/event-bus';
+import {
+  ApprovalRequestApprovedEvent,
+  ApprovalRequestRejectedEvent,
+} from '../domain/events';
 
 export class ApprovalRequestService {
   constructor(
@@ -144,15 +150,15 @@ export class ApprovalRequestService {
 
       case 'Role':
         // For Role-based approval with hierarchy, find user with role at the hierarchy level
-        if (stage.hierarchyLevel && context) {
-          return this.resolveHierarchyApprover(stage.hierarchyLevel as HierarchyLevel, context, stage.roleId ?? null, tx);
+        if (stage.organizationBody && context) {
+          return this.resolveHierarchyApprover(stage.organizationBody as organizationBody, context, stage.roleId ?? null, tx);
         }
         return null;
 
       case 'Hierarchy':
         // Direct hierarchy resolution
-        if (stage.hierarchyLevel && context) {
-          return this.resolveHierarchyApprover(stage.hierarchyLevel as HierarchyLevel, context, null, tx);
+        if (stage.organizationBody && context) {
+          return this.resolveHierarchyApprover(stage.organizationBody as organizationBody, context, null, tx);
         }
         return null;
 
@@ -166,7 +172,7 @@ export class ApprovalRequestService {
    * Integrates with Organization Bodies module to find admin users
    */
   private async resolveHierarchyApprover(
-    hierarchyLevel: HierarchyLevel,
+    organizationBody: organizationBody,
     context: {
       forumId?: string | null;
       areaId?: string | null;
@@ -175,7 +181,7 @@ export class ApprovalRequestService {
     roleId: string | null,
     tx?: any
   ): Promise<string | null> {
-    switch (hierarchyLevel) {
+    switch (organizationBody) {
       case 'Unit':
         if (!this.unitRepo || !context.unitId) return null;
         const unit = await this.unitRepo.findById(context.unitId, tx);
@@ -205,6 +211,7 @@ export class ApprovalRequestService {
     reviewedBy: string;
     comments?: string;
   }): Promise<{ execution: ApprovalStageExecution; request: ApprovalRequest }> {
+    console.log('Processing approval for execution:', data.executionId);
     const execution = await this.executionRepo.findById(data.executionId);
     if (!execution) {
       throw new NotFoundError('Approval execution not found');
@@ -228,8 +235,12 @@ export class ApprovalRequestService {
       throw new BadRequestError(`Request is already ${request.status}`);
     }
 
+    console.log('Fetched request for execution:', request.requestId);
     // Process in transaction
     return await prisma.$transaction(async (tx) => {
+      // Fetch workflow first (needed for events)
+      const workflow = await this.workflowRepo.findById(request.workflowId, tx);
+      
       // Update execution
       const updatedExecution = await this.executionRepo.updateDecision(
         data.executionId,
@@ -255,11 +266,25 @@ export class ApprovalRequestService {
           },
           tx
         );
+
+        console.log('Request rejected:', updatedRequest.requestId);
+        // Publish rejection event
+        await eventBus.publish(
+          new ApprovalRequestRejectedEvent({
+            requestId: request.requestId,
+            workflowCode: workflow?.workflowCode || '',
+            entityType: request.entityType,
+            entityId: request.entityId,
+            rejectedBy: data.reviewedBy,
+            rejectedAt: new Date(),
+            rejectionReason: data.comments || null,
+          })
+        );
+
         return { execution: updatedExecution, request: updatedRequest };
       }
 
       // If approved, check if all stages are complete
-      const workflow = await this.workflowRepo.findById(request.workflowId, tx);
       const allExecutions = await this.executionRepo.findByRequest(request.requestId, tx);
 
       const allApproved = allExecutions.every(exec => exec.status === 'Approved' || exec.status === 'Skipped');
@@ -276,6 +301,20 @@ export class ApprovalRequestService {
           },
           tx
         );
+
+        console.log('Request approved:', updatedRequest.requestId);
+        // Publish approval event
+        await eventBus.publish(
+          new ApprovalRequestApprovedEvent({
+            requestId: request.requestId,
+            workflowCode: workflow?.workflowCode || '',
+            entityType: request.entityType,
+            entityId: request.entityId,
+            approvedBy: data.reviewedBy,
+            approvedAt: new Date(),
+          })
+        );
+
         return { execution: updatedExecution, request: updatedRequest };
       } else {
         // Move to next stage
@@ -322,6 +361,7 @@ export class ApprovalRequestService {
   async getRequestById(requestId: string): Promise<{
     request: ApprovalRequest;
     executions: ApprovalStageExecution[];
+    workflow: ApprovalWorkflow | null;
   }> {
     const request = await this.requestRepo.findById(requestId);
     if (!request) {
@@ -329,6 +369,7 @@ export class ApprovalRequestService {
     }
 
     const executions = await this.executionRepo.findByRequest(requestId);
-    return { request, executions };
+    const workflow = await this.workflowRepo.findById(request.workflowId);
+    return { request, executions, workflow };
   }
 }

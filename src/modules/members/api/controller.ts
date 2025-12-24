@@ -3,6 +3,18 @@
  */
 
 import type { Request, Response, NextFunction } from "express";
+import {
+  MemberDto,
+  MemberListDto,
+  NomineeDto,
+  NomineeListDto,
+  MemberDocumentDto,
+  MemberDocumentListDto,
+  RegistrationPaymentDto,
+  MemberSubmissionDto,
+  MemberDetailsDto,
+  SearchResultDto,
+} from './dtos/memberDtos'
 import type { MemberService } from "../application/memberService";
 import type { SubmitMemberRegistrationHandler } from "../application/commands/submitMemberRegistrationCommand";
 import type { SuspendMemberCommand } from "../application/commands/suspendMemberCommand";
@@ -29,8 +41,12 @@ export class MembersController {
     res: Response,
     next: NextFunction
   ) => {
-    const member = await this.memberService.startRegistration(req.body);
-    next({ dto: "Member", data: member, status: 201 });
+    try {
+      const member = await this.memberService.startRegistration(req.body);
+      return next({ dto: MemberDto, data: member, status: 201 });
+    } catch (err) {
+      next(err)
+    }
   };
 
   /**
@@ -43,11 +59,15 @@ export class MembersController {
     next: NextFunction
   ) => {
     const { memberId } = req.params;
-    const member = await this.memberService.savePersonalDetailsAsDraft(
-      memberId,
-      req.body
-    );
-    next({ dto: "Member", data: member, status: 200 });
+    try {
+      const member = await this.memberService.savePersonalDetailsAsDraft(
+        memberId,
+        req.body
+      );
+      return next({ dto: MemberDto, data: member, status: 200 });
+    } catch (err) {
+      next(err)
+    }
   };
 
   /**
@@ -60,10 +80,14 @@ export class MembersController {
     next: NextFunction
   ) => {
     const { memberId } = req.params;
-    const member = await this.memberService.completePersonalDetailsStep(
-      memberId
-    );
-    next({ dto: "Member", data: member, status: 200 });
+    try {
+      const member = await this.memberService.completePersonalDetailsStep(
+        memberId
+      );
+      return next({ dto: MemberDto, data: member, status: 200 });
+    } catch (err) {
+      next(err)
+    }
   };
 
   // ===== STEP 2: NOMINEES =====
@@ -74,11 +98,15 @@ export class MembersController {
    */
   addNominee = async (req: Request, res: Response, next: NextFunction) => {
     const { memberId } = req.params;
-    const nominee = await this.memberService.addNominee({
-      memberId,
-      ...req.body,
-    });
-    next({ dto: "Nominee", data: nominee, status: 201 });
+    try {
+      const nominee = await this.memberService.addNominee({
+        memberId,
+        ...req.body,
+      });
+      return next({ dto: NomineeDto, data: nominee, status: 201 });
+    } catch (err) {
+      next(err)
+    }
   };
 
   /**
@@ -87,8 +115,12 @@ export class MembersController {
    */
   updateNominee = async (req: Request, res: Response, next: NextFunction) => {
     const { nomineeId } = req.params;
-    const nominee = await this.memberService.updateNominee(nomineeId, req.body);
-    next({ dto: "Nominee", data: nominee, status: 200 });
+    try {
+      const nominee = await this.memberService.updateNominee(nomineeId, req.body);
+      return next({ dto: NomineeDto, data: nominee, status: 200 });
+    } catch (err) {
+      next(err)
+    }
   };
 
   /**
@@ -97,8 +129,12 @@ export class MembersController {
    */
   removeNominee = async (req: Request, res: Response, next: NextFunction) => {
     const { nomineeId } = req.params;
-    await this.memberService.removeNominee(nomineeId);
-    next({ status: 204 });
+    try {
+      await this.memberService.removeNominee(nomineeId);
+      return next({ status: 204 });
+    } catch (err) {
+      next(err)
+    }
   };
 
   /**
@@ -107,8 +143,12 @@ export class MembersController {
    */
   getNominees = async (req: Request, res: Response, next: NextFunction) => {
     const { memberId } = req.params;
-    const nominees = await this.memberService.getNomineesByMemberId(memberId);
-    next({ dto: "NomineeList", data: nominees, status: 200 });
+    try {
+      const nominees = await this.memberService.getNomineesByMemberId(memberId);
+      return next({ dto: NomineeListDto, data: nominees, status: 200 });
+    } catch (err) {
+      next(err)
+    }
   };
 
   /**
@@ -121,8 +161,12 @@ export class MembersController {
     next: NextFunction
   ) => {
     const { memberId } = req.params;
-    const member = await this.memberService.completeNomineesStep(memberId);
-    next({ dto: "Member", data: member, status: 200 });
+    try {
+      const member = await this.memberService.completeNomineesStep(memberId);
+      return next({ dto: MemberDto, data: member, status: 200 });
+    } catch (err) {
+      next(err)
+    }
   };
 
   // ===== STEP 3: DOCUMENTS & PAYMENT =====
@@ -133,11 +177,15 @@ export class MembersController {
    */
   uploadDocument = async (req: Request, res: Response, next: NextFunction) => {
     const { memberId } = req.params;
-    const document = await this.memberService.uploadMemberDocument({
-      memberId,
-      ...req.body,
-    });
-    next({ dto: "MemberDocument", data: document, status: 201 });
+    try {
+      const document = await this.memberService.uploadMemberDocument({
+        memberId,
+        ...req.body,
+      });
+      return next({ dto: MemberDocumentDto, data: document, status: 201 });
+    } catch (err) {
+      next(err)
+    }
   };
 
   /**
@@ -146,8 +194,12 @@ export class MembersController {
    */
   removeDocument = async (req: Request, res: Response, next: NextFunction) => {
     const { documentId } = req.params;
-    await this.memberService.removeMemberDocument(documentId);
-    next({ status: 204 });
+    try {
+      await this.memberService.removeMemberDocument(documentId);
+      return next({ status: 204 });
+    } catch (err) {
+      next(err)
+    }
   };
 
   /**
@@ -156,8 +208,12 @@ export class MembersController {
    */
   getDocuments = async (req: Request, res: Response, next: NextFunction) => {
     const { memberId } = req.params;
-    const documents = await this.memberService.getDocumentsByMemberId(memberId);
-    next({ dto: "MemberDocumentList", data: documents, status: 200 });
+    try {
+      const documents = await this.memberService.getDocumentsByMemberId(memberId);
+      return next({ dto: MemberDocumentListDto, data: documents, status: 200 });
+    } catch (err) {
+      next(err)
+    }
   };
 
   /**
@@ -166,11 +222,15 @@ export class MembersController {
    */
   recordPayment = async (req: Request, res: Response, next: NextFunction) => {
     const { memberId } = req.params;
-    const payment = await this.memberService.recordRegistrationPayment({
-      memberId,
-      ...req.body,
-    });
-    next({ dto: "RegistrationPayment", data: payment, status: 201 });
+    try {
+      const payment = await this.memberService.recordRegistrationPayment({
+        memberId,
+        ...req.body,
+      });
+      return next({ dto: RegistrationPaymentDto, data: payment, status: 201 });
+    } catch (err) {
+      next(err)
+    }
   };
 
   /**
@@ -179,8 +239,12 @@ export class MembersController {
    */
   getPayment = async (req: Request, res: Response, next: NextFunction) => {
     const { memberId } = req.params;
-    const payment = await this.memberService.getPaymentByMemberId(memberId);
-    next({ dto: "RegistrationPayment", data: payment, status: 200 });
+    try {
+      const payment = await this.memberService.getPaymentByMemberId(memberId);
+      return next({ dto: RegistrationPaymentDto, data: payment, status: 200 });
+    } catch (err) {
+      next(err)
+    }
   };
 
   // ===== SUBMISSION =====
@@ -195,8 +259,12 @@ export class MembersController {
     next: NextFunction
   ) => {
     const { memberId } = req.params;
-    const result = await this.submitRegistrationCmd.execute({ memberId });
-    next({ dto: "MemberSubmission", data: result, status: 200 });
+    try {
+      const result = await this.submitRegistrationCmd.execute({ memberId });
+      return next({ dto: MemberSubmissionDto, data: result, status: 200 });
+    } catch (err) {
+      next(err)
+    }
   };
 
   // ===== QUERIES =====
@@ -211,8 +279,12 @@ export class MembersController {
     next: NextFunction
   ) => {
     const { memberId } = req.params;
-    const member = await this.memberService.getMemberDetails(memberId);
-    next({ dto: "MemberDetails", data: member, status: 200 });
+    try {
+      const member = await this.memberService.getMemberDetails(memberId);
+      return next({ dto: MemberDetailsDto, data: member, status: 200 });
+    } catch (err) {
+      next(err)
+    }
   };
 
   /**
@@ -220,8 +292,12 @@ export class MembersController {
    * List members with filters and pagination
    */
   listMembers = async (req: Request, res: Response, next: NextFunction) => {
-    const result = await this.memberService.listMembers(req.query);
-    next({ dto: "MemberList", data: result, status: 200 });
+    try {
+      const result = await this.memberService.listMembers(req.query);
+      return next({ dto: SearchResultDto, data: result, status: 200 });
+    } catch (err) {
+      next(err)
+    }
   };
 
   // ===== MEMBER MANAGEMENT =====
@@ -233,8 +309,12 @@ export class MembersController {
   suspendMember = async (req: Request, res: Response, next: NextFunction) => {
     const { memberId } = req.params;
     const { reason, suspendedBy } = req.body;
-    await this.suspendMemberCmd.execute({ memberId, reason, suspendedBy });
-    next({ dto: "Success", data: { success: true }, status: 200 });
+    try {
+      await this.suspendMemberCmd.execute({ memberId, reason, suspendedBy });
+      return next({ dto: "Success", data: { success: true }, status: 200 });
+    } catch (err) {
+      next(err)
+    }
   };
 
   /**
@@ -248,8 +328,12 @@ export class MembersController {
   ) => {
     const { memberId } = req.params;
     const { reactivatedBy } = req.body;
-    await this.reactivateMemberCmd.execute({ memberId, reactivatedBy });
-    next({ dto: "Success", data: { success: true }, status: 200 });
+    try {
+      await this.reactivateMemberCmd.execute({ memberId, reactivatedBy });
+      return next({ dto: "Success", data: { success: true }, status: 200 });
+    } catch (err) {
+      next(err)
+    }
   };
 
   /**
@@ -264,14 +348,18 @@ export class MembersController {
     const { memberId } = req.params;
     const { closureReason, walletBalanceRefunded, refundedBy, closureDate } =
       req.body;
-    await this.closeMemberAccountCmd.execute({
-      memberId,
-      closureReason,
-      walletBalanceRefunded,
-      refundedBy,
-      closureDate: new Date(closureDate),
-    });
-    next({ dto: "Success", data: { success: true }, status: 200 });
+    try {
+      await this.closeMemberAccountCmd.execute({
+        memberId,
+        closureReason,
+        walletBalanceRefunded,
+        refundedBy,
+        closureDate: new Date(closureDate),
+      });
+      return next({ dto: "Success", data: { success: true }, status: 200 });
+    } catch (err) {
+      next(err)
+    }
   };
 
   /**
@@ -279,7 +367,11 @@ export class MembersController {
    * Search members with advanced filtering
    */
   searchMembers = async (req: Request, res: Response, next: NextFunction) => {
-    const result = await this.memberService.searchMembers(req.body);
-    next({ dto: "SearchResult", data: result, status: 200 });
+    try {
+      const result = await this.memberService.searchMembers(req.body);
+      return next({ dto: SearchResultDto, data: result, status: 200 });
+    } catch (err) {
+      next(err)
+    }
   };
 }

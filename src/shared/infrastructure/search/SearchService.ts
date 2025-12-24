@@ -25,7 +25,7 @@ export class SearchService {
     if (!modelConfig) {
       throw new BadRequestError(`Model ${model} is not supported`)
     }
-    
+    console.log('Model Config:', modelConfig)
     // Validate request fields against model config
     if (request.filters) {
       validateFilters(request.filters, modelConfig)
@@ -49,10 +49,12 @@ export class SearchService {
                   whereConditions.length === 1 ? whereConditions[0] :
                   { AND: whereConditions }
     
-    // Get the Prisma model delegate
-    const modelDelegate = (this.prisma as any)[model.toLowerCase()]
+    // Get the Prisma model delegate. Prisma client exposes delegates in camelCase
+    // camelCase : form (model name with the first letter lower-cased), e.g. ApprovalWorkflow -> approvalWorkflow
+    const delegateName = model.charAt(0).toLowerCase() + model.slice(1)
+    const modelDelegate = (this.prisma as any)[delegateName]
     if (!modelDelegate) {
-      throw new BadRequestError(`Prisma model ${model.toLowerCase()} not found`)
+      throw new BadRequestError(`Prisma model ${delegateName} not found`)
     }
     
     try {

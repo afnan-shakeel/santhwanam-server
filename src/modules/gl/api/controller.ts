@@ -3,6 +3,17 @@
  */
 
 import { Request, Response } from 'express';
+import {
+  ChartOfAccountDto,
+  ChartOfAccountListDto,
+  ChartOfAccountSearchResponseDto,
+  JournalEntryDto,
+  JournalEntryWithLinesDto,
+  JournalEntrySearchResponseDto,
+  FiscalPeriodDto,
+  FiscalPeriodListDto,
+  JournalEntryListDto,
+} from './dtos/glDtos'
 import { ChartOfAccountService } from '../application/chartOfAccountService';
 import { JournalEntryService } from '../application/journalEntryService';
 import { FiscalPeriodService } from '../application/fiscalPeriodService';
@@ -23,56 +34,92 @@ export class GLController {
 
   createAccount = async (req: Request, res: Response) => {
     const userId = (req as any).user?.userId || 'system';
-    const account = await this.chartOfAccountService.createAccount({
-      ...req.body,
-      createdBy: userId,
-    });
-    return res.json({ dto: 'ChartOfAccount', data: account, status: 201 });
+    try {
+      const account = await this.chartOfAccountService.createAccount({
+        ...req.body,
+        createdBy: userId,
+      });
+      return (req as any).next({ dto: ChartOfAccountDto, data: account, status: 201 });
+    } catch (err) {
+      (req as any).next(err)
+    }
   };
 
   updateAccount = async (req: Request, res: Response) => {
     const userId = (req as any).user?.userId || 'system';
-    const account = await this.chartOfAccountService.updateAccount(req.params.accountId, {
-      ...req.body,
-      updatedBy: userId,
-    });
-    return res.json({ dto: 'ChartOfAccount', data: account, status: 200 });
+    try {
+      const account = await this.chartOfAccountService.updateAccount(req.params.accountId, {
+        ...req.body,
+        updatedBy: userId,
+      });
+      return (req as any).next({ dto: ChartOfAccountDto, data: account, status: 200 });
+    } catch (err) {
+      (req as any).next(err)
+    }
   };
 
   deactivateAccount = async (req: Request, res: Response) => {
     const userId = (req as any).user?.userId || 'system';
-    const account = await this.chartOfAccountService.deactivateAccount(req.params.accountId, userId);
-    return res.json({ dto: 'ChartOfAccount', data: account, status: 200 });
+    try {
+      const account = await this.chartOfAccountService.deactivateAccount(req.params.accountId, userId);
+      return (req as any).next({ dto: ChartOfAccountDto, data: account, status: 200 });
+    } catch (err) {
+      (req as any).next(err)
+    }
   };
 
   getAccountById = async (req: Request, res: Response) => {
-    const account = await this.chartOfAccountService.getAccountById(req.params.accountId);
-    return res.json({ dto: 'ChartOfAccount', data: account, status: 200 });
+    try {
+      const account = await this.chartOfAccountService.getAccountById(req.params.accountId);
+      return (req as any).next({ dto: ChartOfAccountDto, data: account, status: 200 });
+    } catch (err) {
+      (req as any).next(err)
+    }
   };
 
   getAccountByCode = async (req: Request, res: Response) => {
-    const account = await this.chartOfAccountService.getAccountByCode(req.params.accountCode);
-    return res.json({ dto: 'ChartOfAccount', data: account, status: 200 });
+    try {
+      const account = await this.chartOfAccountService.getAccountByCode(req.params.accountCode);
+      return (req as any).next({ dto: ChartOfAccountDto, data: account, status: 200 });
+    } catch (err) {
+      (req as any).next(err)
+    }
   };
 
   getAllAccounts = async (req: Request, res: Response) => {
-    const accounts = await this.chartOfAccountService.getAllAccounts();
-    return res.json({ dto: 'ChartOfAccountList', data: accounts, status: 200 });
+    try {
+      const accounts = await this.chartOfAccountService.getAllAccounts();
+      return (req as any).next({ dto: ChartOfAccountListDto, data: accounts, status: 200 });
+    } catch (err) {
+      (req as any).next(err)
+    }
   };
 
   getAccountsByType = async (req: Request, res: Response) => {
-    const accounts = await this.chartOfAccountService.getAccountsByType(req.params.accountType as any);
-    return res.json({ dto: 'ChartOfAccountList', data: accounts, status: 200 });
+    try {
+      const accounts = await this.chartOfAccountService.getAccountsByType(req.params.accountType as any);
+      return (req as any).next({ dto: ChartOfAccountListDto, data: accounts, status: 200 });
+    } catch (err) {
+      (req as any).next(err)
+    }
   };
 
   getActiveAccounts = async (req: Request, res: Response) => {
-    const accounts = await this.chartOfAccountService.getActiveAccounts();
-    return res.json({ dto: 'ChartOfAccountList', data: accounts, status: 200 });
+    try {
+      const accounts = await this.chartOfAccountService.getActiveAccounts();
+      return (req as any).next({ dto: ChartOfAccountListDto, data: accounts, status: 200 });
+    } catch (err) {
+      (req as any).next(err)
+    }
   };
 
   searchAccounts = async (req: Request, res: Response) => {
-    const result = await searchService.execute({ ...req.body, model: 'ChartOfAccount' });
-    return res.json({ dto: 'SearchResult', data: result, status: 200 });
+    try {
+      const result = await searchService.execute({ ...req.body, model: 'ChartOfAccount' });
+      return (req as any).next({ dto: ChartOfAccountSearchResponseDto, data: result, status: 200 });
+    } catch (err) {
+      (req as any).next(err)
+    }
   };
 
   // ===========================
@@ -81,46 +128,70 @@ export class GLController {
 
   createJournalEntry = async (req: Request, res: Response) => {
     const userId = (req as any).user?.userId || 'system';
-    const { entry, lines } = await this.journalEntryService.createJournalEntry({
-      ...req.body,
-      entryDate: new Date(req.body.entryDate),
-      createdBy: userId,
-    });
-    return res.json({ dto: 'JournalEntryWithLines', data: { entry, lines }, status: 201 });
+    try {
+      const { entry, lines } = await this.journalEntryService.createJournalEntry({
+        ...req.body,
+        entryDate: new Date(req.body.entryDate),
+        createdBy: userId,
+      });
+      return (req as any).next({ dto: JournalEntryWithLinesDto, data: { entry, lines }, status: 201 });
+    } catch (err) {
+      (req as any).next(err)
+    }
   };
 
   postJournalEntry = async (req: Request, res: Response) => {
     const userId = (req as any).user?.userId || 'system';
-    const entry = await this.journalEntryService.postJournalEntry(req.params.entryId, userId);
-    return res.json({ dto: 'JournalEntry', data: entry, status: 200 });
+    try {
+      const entry = await this.journalEntryService.postJournalEntry(req.params.entryId, userId);
+      return (req as any).next({ dto: JournalEntryDto, data: entry, status: 200 });
+    } catch (err) {
+      (req as any).next(err)
+    }
   };
 
   reverseJournalEntry = async (req: Request, res: Response) => {
     const userId = (req as any).user?.userId || 'system';
-    const result = await this.journalEntryService.reverseJournalEntry(
-      req.params.entryId,
-      userId,
-      req.body.reason
-    );
-    return res.json({ dto: 'JournalEntryReversal', data: result, status: 200 });
+    try {
+      const result = await this.journalEntryService.reverseJournalEntry(
+        req.params.entryId,
+        userId,
+        req.body.reason
+      );
+      return (req as any).next({ dto: JournalEntryWithLinesDto, data: result, status: 200 });
+    } catch (err) {
+      (req as any).next(err)
+    }
   };
 
   getJournalEntryById = async (req: Request, res: Response) => {
-    const result = await this.journalEntryService.getJournalEntryById(req.params.entryId);
-    return res.json({ dto: 'JournalEntryWithLines', data: result, status: 200 });
+    try {
+      const result = await this.journalEntryService.getJournalEntryById(req.params.entryId);
+      return (req as any).next({ dto: JournalEntryWithLinesDto, data: result, status: 200 });
+    } catch (err) {
+      (req as any).next(err)
+    }
   };
 
   getJournalEntriesByDateRange = async (req: Request, res: Response) => {
-    const entries = await this.journalEntryService.getJournalEntriesByDateRange(
-      new Date(req.query.startDate as string),
-      new Date(req.query.endDate as string)
-    );
-    return res.json({ dto: 'JournalEntryList', data: entries, status: 200 });
+    try {
+      const entries = await this.journalEntryService.getJournalEntriesByDateRange(
+        new Date(req.query.startDate as string),
+        new Date(req.query.endDate as string)
+      );
+      return (req as any).next({ dto: JournalEntryListDto, data: entries, status: 200 });
+    } catch (err) {
+      (req as any).next(err)
+    }
   };
 
   searchJournalEntries = async (req: Request, res: Response) => {
-    const result = await searchService.execute({ ...req.body, model: 'JournalEntry' });
-    return res.json({ dto: 'SearchResult', data: result, status: 200 });
+    try {
+      const result = await searchService.execute({ ...req.body, model: 'JournalEntry' });
+      return (req as any).next({ dto: JournalEntrySearchResponseDto, data: result, status: 200 });
+    } catch (err) {
+      (req as any).next(err)
+    }
   };
 
   // ===========================
@@ -128,40 +199,64 @@ export class GLController {
   // ===========================
 
   createFiscalPeriod = async (req: Request, res: Response) => {
-    const period = await this.fiscalPeriodService.createFiscalPeriod({
-      ...req.body,
-      startDate: new Date(req.body.startDate),
-      endDate: new Date(req.body.endDate),
-    });
-    return res.json({ dto: 'FiscalPeriod', data: period, status: 201 });
+    try {
+      const period = await this.fiscalPeriodService.createFiscalPeriod({
+        ...req.body,
+        startDate: new Date(req.body.startDate),
+        endDate: new Date(req.body.endDate),
+      });
+      return (req as any).next({ dto: FiscalPeriodDto, data: period, status: 201 });
+    } catch (err) {
+      (req as any).next(err)
+    }
   };
 
   closeFiscalPeriod = async (req: Request, res: Response) => {
     const userId = (req as any).user?.userId || 'system';
-    const period = await this.fiscalPeriodService.closeFiscalPeriod(req.params.periodId, userId);
-    return res.json({ dto: 'FiscalPeriod', data: period, status: 200 });
+    try {
+      const period = await this.fiscalPeriodService.closeFiscalPeriod(req.params.periodId, userId);
+      return (req as any).next({ dto: FiscalPeriodDto, data: period, status: 200 });
+    } catch (err) {
+      (req as any).next(err)
+    }
   };
 
   getFiscalPeriodById = async (req: Request, res: Response) => {
-    const period = await this.fiscalPeriodService.getFiscalPeriodById(req.params.periodId);
-    return res.json({ dto: 'FiscalPeriod', data: period, status: 200 });
+    try {
+      const period = await this.fiscalPeriodService.getFiscalPeriodById(req.params.periodId);
+      return (req as any).next({ dto: FiscalPeriodDto, data: period, status: 200 });
+    } catch (err) {
+      (req as any).next(err)
+    }
   };
 
   getAllFiscalPeriods = async (req: Request, res: Response) => {
-    const periods = await this.fiscalPeriodService.getAllFiscalPeriods();
-    return res.json({ dto: 'FiscalPeriodList', data: periods, status: 200 });
+    try {
+      const periods = await this.fiscalPeriodService.getAllFiscalPeriods();
+      return (req as any).next({ dto: FiscalPeriodListDto, data: periods, status: 200 });
+    } catch (err) {
+      (req as any).next(err)
+    }
   };
 
   getFiscalPeriodsByYear = async (req: Request, res: Response) => {
-    const periods = await this.fiscalPeriodService.getFiscalPeriodsByYear(
-      parseInt(req.params.fiscalYear)
-    );
-    return res.json({ dto: 'FiscalPeriodList', data: periods, status: 200 });
+    try {
+      const periods = await this.fiscalPeriodService.getFiscalPeriodsByYear(
+        parseInt(req.params.fiscalYear)
+      );
+      return (req as any).next({ dto: FiscalPeriodListDto, data: periods, status: 200 });
+    } catch (err) {
+      (req as any).next(err)
+    }
   };
 
   getCurrentFiscalPeriod = async (req: Request, res: Response) => {
-    const period = await this.fiscalPeriodService.getCurrentFiscalPeriod();
-    return res.json({ dto: 'FiscalPeriod', data: period, status: 200 });
+    try {
+      const period = await this.fiscalPeriodService.getCurrentFiscalPeriod();
+      return (req as any).next({ dto: FiscalPeriodDto, data: period, status: 200 });
+    } catch (err) {
+      (req as any).next(err)
+    }
   };
 
   // ===========================
@@ -170,21 +265,33 @@ export class GLController {
 
   getTrialBalance = async (req: Request, res: Response) => {
     const asOfDate = req.query.asOfDate ? new Date(req.query.asOfDate as string) : undefined;
-    const report = await this.reportService.generateTrialBalance(asOfDate);
-    return res.json({ dto: 'TrialBalance', data: report, status: 200 });
+    try {
+      const report = await this.reportService.generateTrialBalance(asOfDate);
+      return (req as any).next({ dto: 'TrialBalance', data: report, status: 200 });
+    } catch (err) {
+      (req as any).next(err)
+    }
   };
 
   getIncomeStatement = async (req: Request, res: Response) => {
-    const report = await this.reportService.generateIncomeStatement(
-      new Date(req.query.startDate as string),
-      new Date(req.query.endDate as string)
-    );
-    return res.json({ dto: 'IncomeStatement', data: report, status: 200 });
+    try {
+      const report = await this.reportService.generateIncomeStatement(
+        new Date(req.query.startDate as string),
+        new Date(req.query.endDate as string)
+      );
+      return (req as any).next({ dto: 'IncomeStatement', data: report, status: 200 });
+    } catch (err) {
+      (req as any).next(err)
+    }
   };
 
   getBalanceSheet = async (req: Request, res: Response) => {
     const asOfDate = req.query.asOfDate ? new Date(req.query.asOfDate as string) : undefined;
-    const report = await this.reportService.generateBalanceSheet(asOfDate);
-    return res.json({ dto: 'BalanceSheet', data: report, status: 200 });
+    try {
+      const report = await this.reportService.generateBalanceSheet(asOfDate);
+      return (req as any).next({ dto: 'BalanceSheet', data: report, status: 200 });
+    } catch (err) {
+      (req as any).next(err)
+    }
   };
 }

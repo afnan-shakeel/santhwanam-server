@@ -5,6 +5,7 @@
 import type { ApprovalWorkflowRepository } from '../../domain/repositories';
 import type { ApprovalWorkflow, WorkflowModule } from '../../domain/entities';
 import prisma from '@/shared/infrastructure/prisma/prismaClient';
+import { includes } from 'zod';
 
 export class PrismaApprovalWorkflowRepository implements ApprovalWorkflowRepository {
 
@@ -40,6 +41,7 @@ export class PrismaApprovalWorkflowRepository implements ApprovalWorkflowReposit
     const client = tx ?? prisma;
     return client.approvalWorkflow.findUnique({
       where: { workflowId },
+      include: { stages: true },
     });
   }
 

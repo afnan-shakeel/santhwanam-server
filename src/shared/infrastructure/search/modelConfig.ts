@@ -28,8 +28,8 @@ export const modelConfigs: ModelConfigs = {
   ApprovalWorkflow: {
     searchable: ['workflowCode', 'workflowName', 'entityType', 'module'],
     sortable: ['createdAt', 'workflowCode', 'workflowName'],
-    filters: ['isActive', 'module', 'entityType', 'workflowCode', 'createdAt'],
-    relations: ['stages', 'requests'],
+    filters: ['module', 'entityType', 'workflowCode', 'createdAt'],
+    relations: ['stages'],
   },
   ApprovalRequest: {
     searchable: ['entityType', 'entityId', 'requestedBy', 'status'],
@@ -50,9 +50,15 @@ export const modelConfigs: ModelConfigs = {
     relations: ['agents', 'members'],
   },
   Agent: {
-    searchable: ['agentName', 'agentCode'],
-    sortable: ['createdAt', 'agentName', 'agentCode'],
-    filters: ['isActive', 'createdAt', 'agentName', 'agentCode', 'unitId'],
+    searchable: ['firstName', 'lastName', 'agentCode'],
+    sortable: ['createdAt', 'firstName', 'agentCode'],
+    filters: ['isActive', 'createdAt', 'firstName', 'agentCode', 'unitId'],
+    relations: [],
+  },
+  Member: {
+    searchable: ['memberName', 'memberCode'],
+    sortable: ['createdAt', 'memberName', 'memberCode'],
+    filters: ['createdAt', 'memberName', 'memberCode', 'unitId'],
     relations: [],
   }
 }

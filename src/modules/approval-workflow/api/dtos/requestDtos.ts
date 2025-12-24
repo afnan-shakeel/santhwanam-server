@@ -1,4 +1,5 @@
 import { z } from 'zod'
+import ApprovalWorkflowDto from './workflowDtos'
 
 export const ApprovalRequestDto = z.object({
   requestId: z.string(),
@@ -12,6 +13,7 @@ export const ApprovalRequestDto = z.object({
   requestedAt: z.date(),
   status: z.string(),
   currentStageOrder: z.number().nullable().optional(),
+  workflow: ApprovalWorkflowDto.nullable().optional(),
 })
 
 export type ApprovalRequest = z.infer<typeof ApprovalRequestDto>
@@ -27,3 +29,38 @@ export const ApprovalRequestsSearchResponseDto = z.object({
 export type ApprovalRequestsSearchResponse = z.infer<typeof ApprovalRequestsSearchResponseDto>
 
 export default ApprovalRequestDto
+
+export const SubmitRequestResponseDto = z.object({
+  requestId: z.string(),
+  status: z.string(),
+})
+
+export const ProcessApprovalResponseDto = z.object({
+  execution: z.object({}).optional(),
+  request: z.object({}).optional(),
+})
+
+export const PendingApprovalsListDto = z.array(z.object({
+  executionId: z.string(),
+  requestId: z.string(),
+  stageName: z.string().optional(),
+  status: z.string().optional(),
+  assignedApproverId: z.string().nullable().optional(),
+}))
+
+export const ApprovalRequestWithExecutionsDto = z.object({
+  request: ApprovalRequestDto.nullable(),
+  executions: z.array(z.object({
+    executionId: z.string(),
+    stageId: z.string(),
+    stageOrder: z.number(),
+    assignedApproverId: z.string().nullable().optional(),
+    status: z.string(),
+    decision: z.string().nullable().optional(),
+    reviewedBy: z.string().nullable().optional(),
+    reviewedAt: z.date().nullable().optional(),
+    comments: z.string().nullable().optional(),
+  })),
+  workflow: ApprovalWorkflowDto.nullable().optional(),  
+})
+

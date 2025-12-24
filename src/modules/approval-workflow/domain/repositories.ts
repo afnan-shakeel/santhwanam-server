@@ -11,6 +11,7 @@ import type {
   WorkflowModule,
   ApprovalRequestStatus,
   ApprovalStageStatus,
+  organizationBody,
 } from './entities';
 
 export interface ApprovalWorkflowRepository {
@@ -58,9 +59,10 @@ export interface ApprovalStageRepository {
       approverType: string;
       roleId?: string | null;
       userId?: string | null;
-      hierarchyLevel?: string | null;
+      organizationBody?: string | null;
       isOptional?: boolean;
       autoApprove?: boolean;
+      createdBy?: string | null;
     },
     tx?: any
   ): Promise<ApprovalStage>;
@@ -72,7 +74,7 @@ export interface ApprovalStageRepository {
     approverType: string;
     roleId?: string | null;
     userId?: string | null;
-    hierarchyLevel?: string | null;
+    organizationBody?: organizationBody | null;
     isOptional?: boolean;
     autoApprove?: boolean;
   }>, tx?: any): Promise<void>;
@@ -81,7 +83,27 @@ export interface ApprovalStageRepository {
 
   findById(stageId: string, tx?: any): Promise<ApprovalStage | null>;
 
+  update(
+    stageId: string,
+    data: {
+      stageName?: string;
+      stageOrder?: number;
+      approverType?: string;
+      roleId?: string | null;
+      userId?: string | null;
+      organizationBody?: string | null;
+      isOptional?: boolean;
+      autoApprove?: boolean;
+      updatedBy?: string | null;
+    },
+    tx?: any
+  ): Promise<ApprovalStage>;
+
   deleteByWorkflow(workflowId: string, tx?: any): Promise<void>;
+
+  deleteByIds(stageIds: string[], tx?: any): Promise<void>;
+
+  countExecutionsByStageId(stageId: string, tx?: any): Promise<number>;
 }
 
 export interface ApprovalRequestRepository {
@@ -125,6 +147,8 @@ export interface ApprovalRequestRepository {
   findByRequestedBy(userId: string, tx?: any): Promise<ApprovalRequest[]>;
 
   findByStatus(status: ApprovalRequestStatus, tx?: any): Promise<ApprovalRequest[]>;
+
+  countPendingByWorkflow(workflowId: string, tx?: any): Promise<number>;
 }
 
 export interface ApprovalStageExecutionRepository {
